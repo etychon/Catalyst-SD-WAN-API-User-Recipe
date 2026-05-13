@@ -1,7 +1,13 @@
 .env
+# Never commit real credential files (copy from *.example templates locally only).
+**/.env
+!**/.env.example
+!samples/.env.example
+!samples/examples/*.example.env
 .env.local
 .env.production
 .venv/
+.venv-ci/
 venv/
 __pycache__/
 *.py[cod]
@@ -13,12 +19,6 @@ build/
 *.sqlite3
 *.db
 .DS_Store
-
-# Keep example env files tracked
-!.env.example
-!**/.env.example
-!samples/.env.example
-!samples/examples/*.example.env
 
 # Script outputs (may contain device or tenant-identifying data)
 output/
@@ -40,3 +40,4 @@ credentials.json
 *.swp
 *~
 Thumbs.db
+samples/.env.tme
