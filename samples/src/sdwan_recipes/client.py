@@ -81,6 +81,9 @@ class ManagerClient:
         self.close()
 
     def login(self) -> None:
+        if self._settings.jwt_token:
+            self._apply_preconfigured_jwt()
+            return
         if self._settings.auth_mode == "auto":
             self._jwt_token = None
             self._jwt_refresh = None
@@ -98,6 +101,13 @@ class ManagerClient:
             self._login_jwt()
         else:
             self._login_session()
+
+    def _apply_preconfigured_jwt(self) -> None:
+        """Use JWT (and optional CSRF/refresh) from Settings; skip POST /jwt/login."""
+        self._jwt_token = self._settings.jwt_token
+        self._csrf = self._settings.jwt_csrf
+        self._jwt_refresh = self._settings.jwt_refresh
+        logger.info("JWT from environment (skipping /jwt/login)")
 
     def _login_jwt(self) -> None:
         body: dict[str, Any] = {
@@ -148,7 +158,7 @@ class ManagerClient:
 
     def _default_headers(self, method: str) -> dict[str, str]:
         h: dict[str, str] = {"Accept": "application/json"}
-        if self._settings.auth_mode == "jwt" and self._jwt_token:
+        if self._jwt_token:
             h["Authorization"] = f"Bearer {self._jwt_token}"
         m = method.upper()
         if m in {"POST", "PUT", "PATCH", "DELETE"} and self._csrf:
@@ -167,7 +177,7 @@ class ManagerClient:
         if json_body is not None:
             headers.setdefault("Content-Type", "application/json")
         r = self._client.request(method, path, params=params, json=json_body, headers=headers)
-        if r.status_code == httpx.codes.UNAUTHORIZED and self._settings.auth_mode == "jwt":
+        if r.status_code == httpx.codes.UNAUTHORIZED and self._jwt_token:
             self._try_refresh_jwt()
             headers = self._default_headers(method)
             r = self._client.request(method, path, params=params, json=json_body, headers=headers)

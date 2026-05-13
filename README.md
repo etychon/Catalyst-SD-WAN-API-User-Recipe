@@ -58,7 +58,7 @@ python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e .
 cp .env.example .env
-# Edit .env: set SDWAN_BASE_URL (or SDWAN_MANAGER), SDWAN_USERNAME, SDWAN_PASSWORD
+# Edit .env: set SDWAN_BASE_URL (or SDWAN_MANAGER), credentials or SDWAN_JWT_TOKEN
 python scripts/inventory_devices.py --limit 5
 ```
 
@@ -73,6 +73,8 @@ Alternatively, from the repo root: `pip install -r requirements.txt` and set `PY
 **Security defaults:** TLS verification on. Lab-only: `SDWAN_VERIFY_SSL=false` or `collect_dashboard_snapshot.py --insecure`.
 
 **Password hygiene:** Prefer `SDWAN_PASSWORD_PROMPT=1` and omit `SDWAN_PASSWORD` where possible (see [samples/examples/config.example.env](samples/examples/config.example.env)).
+
+**Env template:** [samples/.env.example](samples/.env.example) lists all variables (including optional `SDWAN_JWT_*` bearer-from-env).
 
 ## Documentation index
 

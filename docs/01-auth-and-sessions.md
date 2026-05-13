@@ -46,6 +46,8 @@ Production deployments should use **TLS 1.2+** with server certificates your cli
 
 See [samples/.env.example](../samples/.env.example): `SDWAN_AUTH_MODE=jwt`, `session`, or **`auto`** (try JWT, then session); `SDWAN_BASE_URL` (**preferred**) or legacy `SDWAN_MANAGER`; `SDWAN_USERNAME`, `SDWAN_PASSWORD`, `SDWAN_VERIFY_SSL`.
 
+**Bearer token from environment (skip `/jwt/login`):** set `SDWAN_JWT_TOKEN` to the access string from a prior `POST /jwt/login` response (`token` field). Use `SDWAN_AUTH_MODE=jwt` or `auto` (not `session`). For state-changing calls, set `SDWAN_JWT_CSRF` from the same response (`csrf`). Optional `SDWAN_JWT_REFRESH` enables the client’s existing `POST /jwt/refresh` path on HTTP 401. Prefer username/password or a secrets manager for renewals when possible; pasted tokens expire and must be rotated like passwords.
+
 ## Related
 
 - [Python client implementation](../samples/src/sdwan_recipes/client.py)

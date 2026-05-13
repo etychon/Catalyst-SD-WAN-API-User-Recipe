@@ -6,6 +6,7 @@ Set SDWAN_FEDERATION as JSON array of objects:
 [{"cluster_id":"A","base_url":"https://m1:8443"},{"cluster_id":"B","base_url":"https://m2:8443"}]
 
 Credentials default to global SDWAN_USERNAME / SDWAN_PASSWORD unless overridden per cluster.
+Optional per-cluster keys jwt_token, jwt_csrf, jwt_refresh override SDWAN_JWT_* from the environment.
 
 See docs/02-rate-limits-scale.md
 """
@@ -52,11 +53,17 @@ def main() -> int:
         url = c["base_url"].rstrip("/")
         user = c.get("username", base_settings.username)
         password = c.get("password", base_settings.password)
+        jwt_t = (c.get("jwt_token") or "").strip() or base_settings.jwt_token
+        jwt_csrf = (c.get("jwt_csrf") or "").strip() or base_settings.jwt_csrf
+        jwt_ref = (c.get("jwt_refresh") or "").strip() or base_settings.jwt_refresh
         s = replace(
             base_settings,
             base_url=url,
             username=user,
             password=password,
+            jwt_token=jwt_t,
+            jwt_csrf=jwt_csrf,
+            jwt_refresh=jwt_ref,
         )
         with ManagerClient(s) as client:
             client.login()

@@ -35,12 +35,16 @@ log = logging.getLogger("collect_dashboard_snapshot")
 
 
 def _ensure_password() -> None:
+    if os.getenv("SDWAN_JWT_TOKEN", "").strip():
+        return
     if os.getenv("SDWAN_PASSWORD"):
         return
     if os.getenv("SDWAN_PASSWORD_PROMPT") == "1" or sys.stdin.isatty():
         os.environ["SDWAN_PASSWORD"] = getpass.getpass("SD-WAN Manager password: ")
     else:
-        raise SystemExit("Set SDWAN_PASSWORD or SDWAN_PASSWORD_PROMPT=1 for interactive entry")
+        raise SystemExit(
+            "Set SDWAN_PASSWORD, SDWAN_PASSWORD_PROMPT=1, or SDWAN_JWT_TOKEN for interactive/bearer auth"
+        )
 
 
 def collect_snapshot(
