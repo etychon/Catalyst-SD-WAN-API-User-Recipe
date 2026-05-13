@@ -1,0 +1,32 @@
+{
+  "title": "Catalyst SD-WAN monitoring recipes — repository manifest",
+  "description": "Machine-oriented index. Human overview: see README.md.",
+  "official_cisco_project": false,
+  "cisco_support": false,
+  "disclaimer": "DISCLAIMER.md",
+  "license": "LICENSE",
+  "api_reference_release": "20.18",
+  "primary_human_docs": ["README.md", "DISCLAIMER.md", "AGENTS.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md"],
+  "foundation_guides": [
+    "docs/00-overview.md",
+    "docs/01-auth-and-sessions.md",
+    "docs/02-rate-limits-scale.md"
+  ],
+  "extended_guides": [
+    "docs/api-selection-guide.md",
+    "docs/dashboard-architecture.md",
+    "docs/data-retention.md",
+    "docs/security-rbac-secrets.md",
+    "docs/field-dictionary-device-health.md",
+    "docs/source-links.md"
+  ],
+  "reference": ["docs/reference/api-index.md", "docs/reference/glossary.md"],
+  "recipes_index": "docs/recipes/README.md",
+  "recipes_glob": "docs/recipes/*.md",
+  "incorporated_starter_pack": "docs/incorporated-starter-pack/README.md",
+  "python_package": "samples/src/sdwan_recipes",
+  "python_project": "samples/pyproject.toml",
+  "scripts_glob": "samples/scripts/*.py",
+  "env_template": ["samples/.env.example", "samples/examples/config.example.env"],
+  "devnet_api_hub": "https://developer.cisco.com/docs/sdwan/"
+}
