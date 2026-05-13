@@ -6,6 +6,7 @@ Use this table as a **curated map** into Cisco DevNet. Endpoint paths and schema
 |-------|------------|--------------------------|
 | Introduction | https://developer.cisco.com/docs/sdwan/ | Orientation |
 | Authentication (JWT + session) | https://developer.cisco.com/docs/sdwan/authentication/ | `ManagerClient` login |
+| V Session Id (multitenant) | https://developer.cisco.com/docs/sdwan/v-session-id/ | Provider-as-tenant `VSessionId` header |
 | Device model / monitoring | https://developer.cisco.com/docs/sdwan/device/ | Inventory, reachability |
 | Full catalog | https://developer.cisco.com/docs/sdwan/ | Search OpenAPI for `dataservice` paths |
 
@@ -32,3 +33,4 @@ When a sample script receives `404` or empty data, first verify **RBAC** for the
 - [Glossary](glossary.md)
 - [Recipes](../recipes/)
 - **Multi-cluster merge sketch:** [samples/scripts/federation_demo.py](../../samples/scripts/federation_demo.py) (requires `SDWAN_FEDERATION` JSON in environment).
+- **Multi-tenant probe:** [samples/scripts/multitenant_context.py](../../samples/scripts/multitenant_context.py); guide [multitenant-clusters.md](../multitenant-clusters.md).

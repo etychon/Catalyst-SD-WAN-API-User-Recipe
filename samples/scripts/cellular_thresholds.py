@@ -12,6 +12,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from typing import Any
 
 _REPO = Path(__file__).resolve().parents[1]
 _SRC = _REPO / "src"
@@ -56,6 +57,37 @@ def _extract_rsrp(iface: dict) -> float | None:
     return None
 
 
+def _interface_dicts(payload: Any) -> list[dict]:
+    data = unwrap_data(payload)
+    if isinstance(data, list):
+        return [x for x in data if isinstance(x, dict)]
+    return []
+
+
+def _iface_label(iface: dict) -> str:
+    parts = [
+        iface.get("ifname"),
+        iface.get("if-name"),
+        iface.get("vpn-ifname"),
+        iface.get("vpn-if-name"),
+        iface.get("interfaceName"),
+    ]
+    return " ".join(str(p) for p in parts if p)
+
+
+def _is_cellular_like(iface: dict) -> bool:
+    """Heuristic: inventory shows a cellular-style interface (name or type)."""
+    label = _iface_label(iface).lower()
+    if "cellular" in label:
+        return True
+    itype = str(
+        iface.get("interface-type") or iface.get("interface_type") or iface.get("type") or ""
+    ).lower()
+    if "cellular" in itype or "lte" in itype:
+        return True
+    return False
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Cellular-like interfaces + custom bands")
     p.add_argument("--limit", type=int, default=15)
@@ -78,32 +110,47 @@ def main() -> int:
             k = _key(row)
             if not k:
                 continue
-            entry = {"deviceId": k, "host-name": row.get("host-name"), "cellular": []}
-
-            for cp in cellular_paths:
-                r = client.request("GET", cp, params={"deviceId": k})
-                if r.is_success:
-                    try:
-                        entry["cellular"].append({"path": cp, "data": unwrap_data(r.json())})
-                    except json.JSONDecodeError:
-                        entry["cellular"].append({"path": cp, "raw": r.text[:300]})
+            entry: dict = {"deviceId": k, "host-name": row.get("host-name"), "cellular": []}
 
             r_if = client.request("GET", "/dataservice/device/interface", params={"deviceId": k})
-            if r_if.is_success:
-                data = unwrap_data(r_if.json())
-                if isinstance(data, list):
-                    for iface in data:
-                        if not isinstance(iface, dict):
-                            continue
-                        name = str(iface.get("ifname", ""))
-                        if "Cellular" in name or "cellular" in name.lower():
-                            rsrp = _extract_rsrp(iface)
-                            iface_view = {
-                                "ifname": name,
-                                "rsrp_dbm": rsrp,
-                                "partner_band": _band_rsrp(rsrp),
-                            }
-                            entry.setdefault("interfaces_cellular", []).append(iface_view)
+            ifaces = _interface_dicts(r_if.json()) if r_if.is_success else []
+            if not r_if.is_success:
+                log.warning(
+                    "GET /dataservice/device/interface HTTP %s for deviceId=%s",
+                    r_if.status_code,
+                    k,
+                )
+
+            has_cellular_like = any(_is_cellular_like(i) for i in ifaces)
+
+            if has_cellular_like:
+                for cp in cellular_paths:
+                    r = client.request("GET", cp, params={"deviceId": k})
+                    if r.is_success:
+                        try:
+                            entry["cellular"].append({"path": cp, "data": unwrap_data(r.json())})
+                        except json.JSONDecodeError:
+                            entry["cellular"].append({"path": cp, "raw": r.text[:300]})
+            else:
+                entry["cellular_api_skipped_reason"] = (
+                    "no_cellular_like_interface_in_inventory"
+                )
+                log.info(
+                    "Skipping cellular dataservice paths for %s (no cellular-like interface in inventory)",
+                    k,
+                )
+
+            for iface in ifaces:
+                if not _is_cellular_like(iface):
+                    continue
+                name = str(iface.get("ifname") or _iface_label(iface) or "")
+                rsrp = _extract_rsrp(iface)
+                iface_view = {
+                    "ifname": name,
+                    "rsrp_dbm": rsrp,
+                    "partner_band": _band_rsrp(rsrp),
+                }
+                entry.setdefault("interfaces_cellular", []).append(iface_view)
 
             out["devices"].append(entry)
 

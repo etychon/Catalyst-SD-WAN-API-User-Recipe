@@ -14,7 +14,8 @@ Version: **20.18** ([DevNet](https://developer.cisco.com/docs/sdwan/)).
 | [location-history-retention.md](location-history-retention.md) | 30-day retention architecture |
 | [syslog-alarms-audit-rbac.md](syslog-alarms-audit-rbac.md) | Events and governance |
 | [cli-equivalents-scale.md](cli-equivalents-scale.md) | Operational views at scale |
+| [multitenant-connectivity.md](multitenant-connectivity.md) | Provider vs tenant, `VSessionId`, tenant list probe |
 
-Foundation: [../00-overview.md](../00-overview.md), [../01-auth-and-sessions.md](../01-auth-and-sessions.md), [../02-rate-limits-scale.md](../02-rate-limits-scale.md).
+Foundation: [../00-overview.md](../00-overview.md), [../01-auth-and-sessions.md](../01-auth-and-sessions.md), [../02-rate-limits-scale.md](../02-rate-limits-scale.md), [../multitenant-clusters.md](../multitenant-clusters.md).
 
 Extended guides: [../api-selection-guide.md](../api-selection-guide.md), [../dashboard-architecture.md](../dashboard-architecture.md), [../data-retention.md](../data-retention.md), [../security-rbac-secrets.md](../security-rbac-secrets.md), [../field-dictionary-device-health.md](../field-dictionary-device-health.md). Original starter-pack recipe text: [../incorporated-starter-pack/README.md](../incorporated-starter-pack/README.md).

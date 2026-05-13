@@ -33,6 +33,12 @@ Sanity check (no network required):
 python3 -m compileall -q samples/src samples/scripts
 ```
 
+Live cluster smoke (needs `samples/.env` with valid credentials; **never commit `.env`**):
+
+```bash
+cd samples && pip install -e . && python scripts/smoke_recipes.py
+```
+
 If `ruff` is installed:
 
 ```bash

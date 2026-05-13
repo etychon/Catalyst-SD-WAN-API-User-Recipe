@@ -51,10 +51,52 @@ def collect_snapshot(
     client: ManagerClient, hours: int, include_cellular: bool
 ) -> dict[str, Any]:
     collected_at = datetime.now(UTC).isoformat()
-    devices_health = client.dataservice_json("/dataservice/health/devices")
-    inventory = client.dataservice_json("/dataservice/device")
-    alarms = query_last_n_hours(client, "/dataservice/alarms", hours)
-    auditlog = query_last_n_hours(client, "/dataservice/auditlog", hours)
+    # Fetch inventory first so a 403 on health can be distinguished from total auth failure.
+    r_inv = client.request("GET", "/dataservice/device")
+    r_inv.raise_for_status()
+    inventory = r_inv.json()
+
+    devices_health: Any
+    try:
+        devices_health = client.dataservice_json("/dataservice/health/devices")
+    except httpx.HTTPStatusError as exc:
+        if exc.response is not None and exc.response.status_code == httpx.codes.FORBIDDEN:
+            log.warning(
+                "GET /dataservice/health/devices returned 403 (likely RBAC or token scope). "
+                "Continuing with inventory-only merge; health-specific fields will be empty."
+            )
+            devices_health = {"data": []}
+        else:
+            raise
+
+    alarms_degraded = False
+    try:
+        alarms = query_last_n_hours(client, "/dataservice/alarms", hours)
+    except SdwanApiError as exc:
+        msg = str(exc)
+        if "403" in msg or "Forbidden" in msg:
+            alarms_degraded = True
+            log.warning(
+                "POST /dataservice/alarms returned 403 (e.g. RBAC or SessionTokenFilter when "
+                "Bearer was not paired with the same /jwt/login session). Skipping alarms export."
+            )
+            alarms = {"data": []}
+        else:
+            raise
+
+    audit_degraded = False
+    try:
+        auditlog = query_last_n_hours(client, "/dataservice/auditlog", hours)
+    except SdwanApiError as exc:
+        msg = str(exc)
+        if "403" in msg or "Forbidden" in msg:
+            audit_degraded = True
+            log.warning(
+                "POST /dataservice/auditlog returned 403; skipping audit export."
+            )
+            auditlog = {"data": []}
+        else:
+            raise
 
     devices = normalize_devices(devices_health, inventory)
     drilldowns: list[dict[str, Any]] = []
@@ -74,6 +116,8 @@ def collect_snapshot(
             "reachable_count": sum(1 for item in devices if item.get("reachability") == "reachable"),
             "alarm_count": count_records(alarms),
             "audit_count": count_records(auditlog),
+            "alarms_export_degraded": alarms_degraded,
+            "audit_export_degraded": audit_degraded,
         },
         "devices": devices,
         "device_drilldowns": drilldowns,
@@ -235,6 +279,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    # Load .env before password checks (Settings.load() also calls load_dotenv).
+    from dotenv import load_dotenv
+
+    load_dotenv()
     _ensure_password()
     base = Settings.load()
     settings = replace(

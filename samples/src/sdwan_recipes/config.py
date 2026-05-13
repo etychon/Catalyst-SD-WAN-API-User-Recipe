@@ -26,6 +26,10 @@ class Settings:
     jwt_token: str | None = None
     jwt_csrf: str | None = None
     jwt_refresh: str | None = None
+    # Multitenant (see docs/multitenant-clusters.md)
+    tenant: str | None = None  # JWT login body "tenant" when set; optional tenant UUID context
+    tenant_subdomain: str | None = None  # Session-only: provider-as-tenant via GET /tenant + vsessionid
+    vsession_id: str | None = None  # Optional header VSessionId (any auth mode) when already known
 
     @staticmethod
     def load() -> "Settings":
@@ -50,6 +54,16 @@ class Settings:
             )
         dur_raw = os.getenv("SDWAN_JWT_DURATION", "").strip()
         jwt_duration = int(dur_raw) if dur_raw else None
+        tenant = os.getenv("SDWAN_TENANT", "").strip() or None
+        tenant_subdomain = os.getenv("SDWAN_TENANT_SUBDOMAIN", "").strip() or None
+        vsession_id = os.getenv("SDWAN_VSESSION_ID", "").strip() or None
+        if tenant_subdomain and mode != "session":
+            raise ValueError(
+                "SDWAN_TENANT_SUBDOMAIN requires SDWAN_AUTH_MODE=session "
+                "(provider-as-tenant uses cookies + XSRF + POST /dataservice/tenant/{id}/vsessionid per DevNet)."
+            )
+        if tenant_subdomain and jwt_token:
+            raise ValueError("Do not combine SDWAN_TENANT_SUBDOMAIN with SDWAN_JWT_TOKEN; use session login for VSessionId flow.")
         return Settings(
             base_url=base,
             username=user,
@@ -62,4 +76,7 @@ class Settings:
             jwt_token=jwt_token,
             jwt_csrf=jwt_csrf,
             jwt_refresh=jwt_refresh,
+            tenant=tenant,
+            tenant_subdomain=tenant_subdomain,
+            vsession_id=vsession_id,
         )

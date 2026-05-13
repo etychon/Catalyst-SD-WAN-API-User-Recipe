@@ -7,6 +7,7 @@ from typing import Any
 import httpx
 
 from sdwan_recipes.config import Settings
+from sdwan_recipes.util import unwrap_data
 
 logger = logging.getLogger("sdwan_recipes")
 
@@ -26,6 +27,8 @@ _SENSITIVE_KEYS = frozenset(
         "cookie",
         "set-cookie",
         "jsessionid",
+        "vsessionid",
+        "v_session_id",
     }
 )
 
@@ -65,6 +68,7 @@ class ManagerClient:
         self._jwt_token: str | None = None
         self._jwt_refresh: str | None = None
         self._csrf: str | None = None
+        self._vsession_id: str | None = None
 
     def close(self) -> None:
         if self._settings.auth_mode == "session":
@@ -105,15 +109,45 @@ class ManagerClient:
     def _apply_preconfigured_jwt(self) -> None:
         """Use JWT (and optional CSRF/refresh) from Settings; skip POST /jwt/login."""
         self._jwt_token = self._settings.jwt_token
-        self._csrf = self._settings.jwt_csrf
-        self._jwt_refresh = self._settings.jwt_refresh
+        self._csrf = (self._settings.jwt_csrf or "").strip() or None
+        self._jwt_refresh = (self._settings.jwt_refresh or "").strip() or None
+        self._vsession_id = self._settings.vsession_id
         logger.info("JWT from environment (skipping /jwt/login)")
+        self._bootstrap_csrf_for_bearer()
+
+    def _bootstrap_csrf_for_bearer(self) -> None:
+        """
+        When using Bearer without XSRF, some Manager builds reject statistics POSTs
+        (SessionTokenFilter). GET /dataservice/client/token with Authorization often
+        returns the XSRF string paired to that JWT session.
+        """
+        if not self._jwt_token or self._csrf:
+            return
+        try:
+            r = self._client.get(
+                "/dataservice/client/token",
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": f"Bearer {self._jwt_token}",
+                },
+            )
+            if not r.is_success:
+                logger.debug("GET /dataservice/client/token (Bearer) -> %s", r.status_code)
+                return
+            tok = (r.text or "").strip().strip('"')
+            if tok:
+                self._csrf = tok
+                logger.info("XSRF obtained from GET /dataservice/client/token for Bearer auth")
+        except httpx.HTTPError as exc:
+            logger.debug("Bearer CSRF bootstrap failed: %s", exc)
 
     def _login_jwt(self) -> None:
         body: dict[str, Any] = {
             "username": self._settings.username,
             "password": self._settings.password,
         }
+        if self._settings.tenant:
+            body["tenant"] = self._settings.tenant
         if self._settings.jwt_duration is not None:
             body["duration"] = self._settings.jwt_duration
         r = self._client.post("/jwt/login", json=body, headers={"Content-Type": "application/json"})
@@ -124,11 +158,13 @@ class ManagerClient:
         self._jwt_token = data["token"]
         self._csrf = data.get("csrf")
         self._jwt_refresh = data.get("refresh")
+        self._vsession_id = self._settings.vsession_id
         logger.info(
             "JWT login ok user=%s tenant=%s",
             data.get("sub", ""),
             data.get("tenant", ""),
         )
+        self._bootstrap_csrf_for_bearer()
 
     def _login_session(self) -> None:
         payload = {
@@ -155,13 +191,51 @@ class ManagerClient:
         self._csrf = (tok.text or "").strip().strip('"') or None
         self._jwt_token = None
         logger.info("Session login ok (JSESSIONID cookie established)")
+        self._attach_vsession_after_session_login()
 
-    def _default_headers(self, method: str) -> dict[str, str]:
+    def _attach_vsession_after_session_login(self) -> None:
+        """Provider-as-tenant: optional VSessionId from env or from tenant list + vsessionid API."""
+        if self._settings.vsession_id:
+            self._vsession_id = self._settings.vsession_id
+            logger.info("VSessionId from environment")
+            return
+        if not self._settings.tenant_subdomain:
+            return
+        tid = self._resolve_tenant_id_by_subdomain(self._settings.tenant_subdomain)
+        data = self.dataservice_post_json(f"/dataservice/tenant/{tid}/vsessionid", json_body={})
+        self._vsession_id = data.get("VSessionId")
+        if not self._vsession_id:
+            raise SdwanApiError("POST /dataservice/tenant/.../vsessionid did not return VSessionId")
+        logger.info("VSessionId obtained for tenant_id=%s", tid[:8] + "..." if len(tid) > 8 else tid)
+
+    def _resolve_tenant_id_by_subdomain(self, want: str) -> str:
+        payload = self.dataservice_json("/dataservice/tenant")
+        rows = unwrap_data(payload)
+        if not isinstance(rows, list):
+            rows = [rows] if isinstance(rows, dict) else []
+        want_l = want.strip().lower()
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            sd = row.get("subDomain") or row.get("subdomain") or ""
+            if str(sd).strip().lower() == want_l:
+                tid = row.get("tenantId") or row.get("tenant_id")
+                if tid:
+                    return str(tid)
+        raise SdwanApiError(f"No tenant found with subDomain matching {want!r}")
+
+    def _default_headers(self, method: str, *, omit_xsrf: bool = False) -> dict[str, str]:
         h: dict[str, str] = {"Accept": "application/json"}
         if self._jwt_token:
             h["Authorization"] = f"Bearer {self._jwt_token}"
+        if self._vsession_id:
+            h["VSessionId"] = self._vsession_id
         m = method.upper()
-        if m in {"POST", "PUT", "PATCH", "DELETE"} and self._csrf:
+        if (
+            not omit_xsrf
+            and m in {"POST", "PUT", "PATCH", "DELETE"}
+            and self._csrf
+        ):
             h["X-XSRF-TOKEN"] = self._csrf
         return h
 
@@ -172,14 +246,15 @@ class ManagerClient:
         *,
         params: dict[str, Any] | None = None,
         json_body: Any | None = None,
+        omit_xsrf: bool = False,
     ) -> httpx.Response:
-        headers = self._default_headers(method)
+        headers = self._default_headers(method, omit_xsrf=omit_xsrf)
         if json_body is not None:
             headers.setdefault("Content-Type", "application/json")
         r = self._client.request(method, path, params=params, json=json_body, headers=headers)
         if r.status_code == httpx.codes.UNAUTHORIZED and self._jwt_token:
             self._try_refresh_jwt()
-            headers = self._default_headers(method)
+            headers = self._default_headers(method, omit_xsrf=omit_xsrf)
             r = self._client.request(method, path, params=params, json=json_body, headers=headers)
         logger.debug("HTTP %s %s -> %s", method, path, r.status_code)
         return r
@@ -214,6 +289,22 @@ class ManagerClient:
         if not p.startswith("/dataservice"):
             p = "/dataservice" + (p if p.startswith("/") else "/" + p)
         r = self.request("POST", p, json_body=json_body)
+        if r.status_code == httpx.codes.FORBIDDEN and self._jwt_token and "SessionTokenFilter" in (r.text or ""):
+            if not self._csrf:
+                self._bootstrap_csrf_for_bearer()
+                if self._csrf:
+                    r = self.request("POST", p, json_body=json_body)
+            if (
+                r.status_code == httpx.codes.FORBIDDEN
+                and self._jwt_token
+                and "SessionTokenFilter" in (r.text or "")
+                and self._csrf
+            ):
+                logger.info(
+                    "POST %s returned SessionTokenFilter 403 with X-XSRF-TOKEN; retrying without X-XSRF-TOKEN",
+                    p,
+                )
+                r = self.request("POST", p, json_body=json_body, omit_xsrf=True)
         if r.status_code >= 400:
             raise SdwanApiError(f"{p} failed HTTP {r.status_code}: {r.text[:400]}")
         text = (r.text or "").strip()

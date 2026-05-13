@@ -44,11 +44,16 @@ Production deployments should use **TLS 1.2+** with server certificates your cli
 
 ## Sample configuration
 
-See [samples/.env.example](../samples/.env.example): `SDWAN_AUTH_MODE=jwt`, `session`, or **`auto`** (try JWT, then session); `SDWAN_BASE_URL` (**preferred**) or legacy `SDWAN_MANAGER`; `SDWAN_USERNAME`, `SDWAN_PASSWORD`, `SDWAN_VERIFY_SSL`.
+See [samples/.env.example](../samples/.env.example): `SDWAN_AUTH_MODE=jwt`, `session`, or **`auto`** (try JWT, then session); `SDWAN_BASE_URL` (**preferred**) or legacy `SDWAN_MANAGER`; `SDWAN_USERNAME`, `SDWAN_PASSWORD`, `SDWAN_VERIFY_SSL`. Multi-tenant options: `SDWAN_TENANT`, `SDWAN_TENANT_SUBDOMAIN`, `SDWAN_VSESSION_ID` (see [multitenant-clusters.md](../multitenant-clusters.md)).
 
-**Bearer token from environment (skip `/jwt/login`):** set `SDWAN_JWT_TOKEN` to the access string from a prior `POST /jwt/login` response (`token` field). Use `SDWAN_AUTH_MODE=jwt` or `auto` (not `session`). For state-changing calls, set `SDWAN_JWT_CSRF` from the same response (`csrf`). Optional `SDWAN_JWT_REFRESH` enables the client’s existing `POST /jwt/refresh` path on HTTP 401. Prefer username/password or a secrets manager for renewals when possible; pasted tokens expire and must be rotated like passwords.
+**Bearer token from environment (skip `/jwt/login`):** set `SDWAN_JWT_TOKEN` to the access string from a prior `POST /jwt/login` response (`token` field). Use `SDWAN_AUTH_MODE=jwt` or `auto` (not `session`). For state-changing calls, set `SDWAN_JWT_CSRF` from the same response (`csrf`) when your Manager returns it. If `csrf` is absent from that JSON, the sample `ManagerClient` attempts **`GET /dataservice/client/token` with `Authorization: Bearer …`** after login to obtain an XSRF string paired to the JWT (some statistics POSTs require it). Optional `SDWAN_JWT_REFRESH` enables the client’s existing `POST /jwt/refresh` path on HTTP 401. Prefer username/password or a secrets manager for renewals when possible; pasted tokens expire and must be rotated like passwords.
+
+## Multi-tenant Manager (provider vs tenant)
+
+See **[multitenant-clusters.md](multitenant-clusters.md)** for when to use `SDWAN_TENANT`, `SDWAN_TENANT_SUBDOMAIN`, and `SDWAN_VSESSION_ID`, and how they map to session vs JWT flows. Runnable probe: `samples/scripts/multitenant_context.py`.
 
 ## Related
 
 - [Python client implementation](../samples/src/sdwan_recipes/client.py)
 - [Scale implications of session limits](02-rate-limits-scale.md)
+- [Multi-tenant clusters — provider, tenant, VSessionId](multitenant-clusters.md)

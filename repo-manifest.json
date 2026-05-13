@@ -10,7 +10,8 @@
   "foundation_guides": [
     "docs/00-overview.md",
     "docs/01-auth-and-sessions.md",
-    "docs/02-rate-limits-scale.md"
+    "docs/02-rate-limits-scale.md",
+    "docs/multitenant-clusters.md"
   ],
   "extended_guides": [
     "docs/api-selection-guide.md",

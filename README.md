@@ -81,6 +81,7 @@ Alternatively, from the repo root: `pip install -r requirements.txt` and set `PY
 - [Overview — Manager vs devices, polling patterns](docs/00-overview.md)
 - [Authentication — JWT and session](docs/01-auth-and-sessions.md)
 - [Scale — pagination, multi-cluster](docs/02-rate-limits-scale.md)
+- [Multi-tenant Manager — provider vs tenant](docs/multitenant-clusters.md)
 - [API index (DevNet links)](docs/reference/api-index.md)
 - [Glossary](docs/reference/glossary.md)
 - [Recipes (use cases)](docs/recipes/) — [table of contents](docs/recipes/README.md)
@@ -108,6 +109,7 @@ Alternatively, from the repo root: `pip install -r requirements.txt` and set `PY
 | Cellular thresholds | [docs/recipes/cellular-signal-thresholds.md](docs/recipes/cellular-signal-thresholds.md) |
 | Location history retention | [docs/recipes/location-history-retention.md](docs/recipes/location-history-retention.md) |
 | Syslog, alarms, audit, RBAC | [docs/recipes/syslog-alarms-audit-rbac.md](docs/recipes/syslog-alarms-audit-rbac.md) |
+| Multi-tenant connectivity | [docs/recipes/multitenant-connectivity.md](docs/recipes/multitenant-connectivity.md) |
 | CLI-style views at scale | [docs/recipes/cli-equivalents-scale.md](docs/recipes/cli-equivalents-scale.md) |
 
 ### Python scripts (`samples/scripts/`)
@@ -121,9 +123,12 @@ Alternatively, from the repo root: `pip install -r requirements.txt` and set `PY
 | `topology_location.py` | Sites + devices for maps |
 | `transport_underlay.py` | WAN-ish interfaces from inventory |
 | `cellular_thresholds.py` | Cellular metrics + custom bands |
+| `cellular_signal_history.py` | EIOLTE `uniqueAggregation` RSSI history (Braille sparkline per slot/SIM) |
 | `location_history_demo.py` | SQLite snapshot demo (ETL pattern) |
 | `cli_bulk_demo.py` | Bulk read-only diagnostics with dry-run |
 | `federation_demo.py` | Multi-Manager merge via `SDWAN_FEDERATION` |
+| `multitenant_context.py` | Multi-tenant probe (server, tenant list, device sample) |
+| `smoke_recipes.py` | Run all recipe scripts against `samples/.env` (lab/CI gate) |
 | `collect_dashboard_snapshot.py` | Health + inventory merge, drilldowns, alarms/audit POST queries |
 
 ## Contributing and publishing hygiene

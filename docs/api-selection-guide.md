@@ -27,7 +27,8 @@ Avoid:
 | Real-time device health | `GET /device/system/status?deviceId=...`, `GET /device/counters?deviceId=...`, `GET /device/bfd/summary?deviceId=...` | Use when an operator drills into one device. |
 | Interfaces and IPs | `GET /device/interface?deviceId=...`, `GET /statistics/interface/type?query=...` | Use real-time interface state for current view and statistics for time-series traffic. |
 | Tunnels and transport | `GET /device/bfd/sessions?deviceId=...`, `GET /device/bfd/summary?deviceId=...`, `GET /data/device/state/BFDSessions?count=...`, `POST /statistics/approute/fec/aggregation` | Use BFD state for current tunnel inventory and app-route statistics for latency, loss, jitter, and tunnel trend charts. |
-| Cellular status | `GET /device/cellular/status?deviceId=...`, `GET /device/cellularEiolte/radio?deviceId=...` | Build your own signal classification from RSRP, RSRQ, RSSI, SINR/SNR rather than relying only on generic excellent/good/fair/poor labels. |
+| Cellular status (live drill-down) | `GET /device/cellular/status?deviceId=...`, `GET /device/cellularEiolte/radio?deviceId=...` | Build your own signal classification from RSRP, RSRQ, RSSI, SINR/SNR rather than relying only on generic excellent/good/fair/poor labels. |
+| Cellular signal **over time** (statistics) | `POST /statistics/eiolte/uniqueAggregation` | Aggregated EIOLTE buckets (`header`, `entryTimeList`, `data[]` with `entry_time`, `rsrp`, `rsrq`, `rssi`, slot/SIM, `count`, …). Body must include **`aggregation`** (`field`, `metrics`, `histogram`) on current managers—see [cellular-signal-thresholds.md](recipes/cellular-signal-thresholds.md) for request/response notes and error codes. |
 | Site topology and coordinates | `GET /device`, `GET /health/devices` | Prefer Manager-provided latitude/longitude when `isDeviceGeoData` or `has_geo_data` is true. Store manual overrides in your dashboard database. |
 | Alarms and events | `POST /alarms`, `GET /events/fields` | Use POST for non-trivial queries and large query strings. |
 | Audit logs | `POST /auditlog`, `GET /auditlog/fields` | Pull audit data into a security/audit view with actor, action, severity, object, and timestamp. |
@@ -54,3 +55,6 @@ Do not mirror the SD-WAN Manager UI. Build opinionated views:
 - IT operations view: inventory drift, config status, tunnel status, CPU/memory, and events.
 - Multi-cluster executive view: site counts, degraded sites, offline devices, tunnel SLA, and top alarm categories.
 
+## Multi-tenant Manager
+
+If your deployment is **multi-tenant**, provider automation often needs `GET /tenant` and `POST /tenant/{tenantId}/vsessionid` before dataservice reads behave as a specific tenant. Single-tenant clusters ignore this. See [multitenant-clusters.md](multitenant-clusters.md) and [recipes/multitenant-connectivity.md](recipes/multitenant-connectivity.md).

@@ -10,6 +10,7 @@
 | **Configuration group (CG)** | Group-based configuration model where applicable; inventory recipes relate CG membership to policy views. |
 | **system-ip** | Stable overlay identifier used in many API filters (format is deployment-specific). |
 | **deviceId / uuid** | Device identifiers in API payloads — always validate which field your deployment uses as the join key. |
+| **Multi-tenant** | Provider-operated cluster with multiple tenants; RBAC may expose `GET /dataservice/tenant` only to provider users; `VSessionId` header scopes some session calls to one tenant. |
 | **JWT claims** | `token`, `refresh`, `csrf`, `tenantId`, etc., from `POST /jwt/login` per DevNet. |
 | **XSRF** | Cross-site request forgery token required for most state-changing calls (`X-XSRF-TOKEN` header). |
 
