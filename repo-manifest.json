@@ -24,6 +24,7 @@
   "reference": ["docs/reference/api-index.md", "docs/reference/glossary.md"],
   "recipes_index": "docs/recipes/README.md",
   "recipes_glob": "docs/recipes/*.md",
+  "ux2_config_group_recipe": "docs/recipes/config-group-ux2-sync-deploy.md",
   "incorporated_starter_pack": "docs/incorporated-starter-pack/README.md",
   "python_package": "samples/src/sdwan_recipes",
   "python_project": "samples/pyproject.toml",

@@ -102,7 +102,8 @@ Alternatively, from the repo root: `pip install -r requirements.txt` and set `PY
 |-------|-----|
 | OT starter pack | [docs/recipes/ot-minimal-pack.md](docs/recipes/ot-minimal-pack.md) |
 | Device + interface inventory | [docs/recipes/inventory-devices.md](docs/recipes/inventory-devices.md) |
-| Config sync / configuration groups | [docs/recipes/inventory-status-config-groups.md](docs/recipes/inventory-status-config-groups.md) |
+| Config sync (legacy probe) | [docs/recipes/inventory-status-config-groups.md](docs/recipes/inventory-status-config-groups.md) |
+| UX 2.0 config groups (list, drift, deploy) | [docs/recipes/config-group-ux2-sync-deploy.md](docs/recipes/config-group-ux2-sync-deploy.md) |
 | Health and tunnels | [docs/recipes/health-cpu-mem-tunnels.md](docs/recipes/health-cpu-mem-tunnels.md) |
 | Topology and GPS | [docs/recipes/topology-location-gps.md](docs/recipes/topology-location-gps.md) |
 | Transport / underlay | [docs/recipes/transport-underlay-monitoring.md](docs/recipes/transport-underlay-monitoring.md) |
@@ -118,6 +119,7 @@ Alternatively, from the repo root: `pip install -r requirements.txt` and set `PY
 |--------|---------|
 | `inventory_devices.py` | Devices + per-device interfaces |
 | `inventory_status.py` | Devices + config status / template / CG hints |
+| `config_group_ux2.py` | UX 2.0 config groups: list, drift filter, optional deploy |
 | `health_tunnels.py` | Devices + tunnel endpoint attempts |
 | `alarms_events.py` | Alarms and events probe |
 | `topology_location.py` | Sites + devices for maps |

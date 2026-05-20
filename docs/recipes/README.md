@@ -6,7 +6,8 @@ Version: **20.18** ([DevNet](https://developer.cisco.com/docs/sdwan/)).
 |--------|---------|
 | [ot-minimal-pack.md](ot-minimal-pack.md) | OT-focused starter path |
 | [inventory-devices.md](inventory-devices.md) | Devices, interfaces, IPs |
-| [inventory-status-config-groups.md](inventory-status-config-groups.md) | Sync and configuration groups |
+| [inventory-status-config-groups.md](inventory-status-config-groups.md) | Legacy sync probe (templates / mixed) |
+| [config-group-ux2-sync-deploy.md](config-group-ux2-sync-deploy.md) | UX 2.0 config groups: list, drift, deploy |
 | [health-cpu-mem-tunnels.md](health-cpu-mem-tunnels.md) | Health and tunnel stats |
 | [topology-location-gps.md](topology-location-gps.md) | Sites and coordinates |
 | [transport-underlay-monitoring.md](transport-underlay-monitoring.md) | WAN / underlay |

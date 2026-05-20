@@ -76,6 +76,11 @@ def main() -> int:
         action="store_true",
         help="Fail if SDWAN_FEDERATION is unset (default: skip federation_demo when unset)",
     )
+    p.add_argument(
+        "--skip-config-group-ux2",
+        action="store_true",
+        help="Skip config_group_ux2.py (e.g. if Config Group-read RBAC is missing)",
+    )
     args = p.parse_args()
 
     repo = args.samples_repo.resolve()
@@ -91,6 +96,26 @@ def main() -> int:
     steps: list[tuple[str, list[str]]] = [
         ("inventory_devices", [py, "scripts/inventory_devices.py", "--limit", "2"]),
         ("inventory_status", [py, "scripts/inventory_status.py"]),
+    ]
+
+    if not args.skip_config_group_ux2:
+        steps.append(
+            (
+                "config_group_ux2",
+                [
+                    py,
+                    "scripts/config_group_ux2.py",
+                    "--out-of-sync-only",
+                    "--output",
+                    str(out_dir / "config_group_ux2.json"),
+                ],
+            )
+        )
+    else:
+        print("SKIP config_group_ux2 (--skip-config-group-ux2)")
+
+    steps.extend(
+        [
         ("health_tunnels", [py, "scripts/health_tunnels.py", "--limit", "2"]),
         ("topology_location", [py, "scripts/topology_location.py"]),
         ("transport_underlay", [py, "scripts/transport_underlay.py"]),
@@ -107,7 +132,8 @@ def main() -> int:
         ("alarms_events", [py, "scripts/alarms_events.py"]),
         ("cli_bulk_demo", [py, "scripts/cli_bulk_demo.py", "--limit", "2"]),
         ("multitenant_context", [py, "scripts/multitenant_context.py"]),
-    ]
+        ]
+    )
 
     if not args.skip_collect_dashboard_snapshot:
         steps.append(

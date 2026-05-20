@@ -1,6 +1,6 @@
 .env
 # Never commit real credential files (copy from *.example templates locally only).
-**/.env
+**/.env.*
 !**/.env.example
 !samples/.env.example
 !samples/examples/*.example.env

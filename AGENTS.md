@@ -21,6 +21,7 @@ Use this repository as **human-readable documentation** plus **executable exampl
 - **Scripts** live in `samples/scripts/` — thin CLIs; configuration via `.env` (see `samples/.env.example`). Use `collect_dashboard_snapshot.py` for a multi-endpoint export aligned with [docs/dashboard-architecture.md](docs/dashboard-architecture.md). Run `smoke_recipes.py` to exercise all recipe scripts against a local `samples/.env` (never commit `.env`).
 - **Do not** log `Authorization` headers, JWT bodies, or passwords. The client uses structured logging and redacts sensitive keys.
 - **TLS**: default verify on; `SDWAN_VERIFY_SSL=false` is lab-only and must be called out in any generated deployment advice.
+- **UX 2.0 configuration groups:** [docs/recipes/config-group-ux2-sync-deploy.md](docs/recipes/config-group-ux2-sync-deploy.md) covers list/associate/drift/deploy for `sdwan` and `sd-routing` only (not classic templates). Samples may call deploy POST APIs when the operator passes `--deploy` and `--confirm-deploy`; do not deploy without explicit confirmation.
 
 ## Recipe → script map
 
@@ -36,6 +37,7 @@ Use this repository as **human-readable documentation** plus **executable exampl
 | `docs/recipes/syslog-alarms-audit-rbac.md` | `samples/scripts/alarms_events.py` |
 | `docs/recipes/cli-equivalents-scale.md` | `samples/scripts/cli_bulk_demo.py` |
 | `docs/recipes/multitenant-connectivity.md` | `samples/scripts/multitenant_context.py` |
+| `docs/recipes/config-group-ux2-sync-deploy.md` | `samples/scripts/config_group_ux2.py` |
 | `docs/02-rate-limits-scale.md` (multi-cluster) | `samples/scripts/federation_demo.py` |
 | (smoke — all recipe scripts) | `samples/scripts/smoke_recipes.py` |
 | [docs/dashboard-architecture.md](docs/dashboard-architecture.md) (snapshot) | `samples/scripts/collect_dashboard_snapshot.py` |

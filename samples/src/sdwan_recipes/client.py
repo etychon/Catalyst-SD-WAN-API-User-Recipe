@@ -199,16 +199,18 @@ class ManagerClient:
             self._vsession_id = self._settings.vsession_id
             logger.info("VSessionId from environment")
             return
-        if not self._settings.tenant_subdomain:
+        key = self._settings.tenant_subdomain or self._settings.tenant_name
+        if not key:
             return
-        tid = self._resolve_tenant_id_by_subdomain(self._settings.tenant_subdomain)
+        tid = self._resolve_tenant_id(key)
         data = self.dataservice_post_json(f"/dataservice/tenant/{tid}/vsessionid", json_body={})
         self._vsession_id = data.get("VSessionId")
         if not self._vsession_id:
             raise SdwanApiError("POST /dataservice/tenant/.../vsessionid did not return VSessionId")
         logger.info("VSessionId obtained for tenant_id=%s", tid[:8] + "..." if len(tid) > 8 else tid)
 
-    def _resolve_tenant_id_by_subdomain(self, want: str) -> str:
+    def _resolve_tenant_id(self, want: str) -> str:
+        """Match tenant list by subDomain (exact), name (exact), or subDomain prefix (e.g. emmanuel)."""
         payload = self.dataservice_json("/dataservice/tenant")
         rows = unwrap_data(payload)
         if not isinstance(rows, list):
@@ -217,12 +219,64 @@ class ManagerClient:
         for row in rows:
             if not isinstance(row, dict):
                 continue
-            sd = row.get("subDomain") or row.get("subdomain") or ""
-            if str(sd).strip().lower() == want_l:
-                tid = row.get("tenantId") or row.get("tenant_id")
-                if tid:
-                    return str(tid)
-        raise SdwanApiError(f"No tenant found with subDomain matching {want!r}")
+            sd = str(row.get("subDomain") or row.get("subdomain") or "").strip().lower()
+            name = str(row.get("name") or "").strip().lower()
+            tid = row.get("tenantId") or row.get("tenant_id")
+            if not tid:
+                continue
+            if want_l in {sd, name} or sd.startswith(want_l + ".") or sd.split(".")[0] == want_l:
+                return str(tid)
+        raise SdwanApiError(f"No tenant found matching {want!r} (name or subDomain)")
+
+    def _resolve_tenant_id_by_subdomain(self, want: str) -> str:
+        return self._resolve_tenant_id(want)
+
+    def activate_tenant_context(self, tenant_key: str | None = None) -> str:
+        """
+        Provider-as-tenant: obtain VSessionId for tenant_key (name or subDomain).
+        Uses SDWAN_TENANT_NAME / SDWAN_TENANT_SUBDOMAIN from settings when tenant_key is None.
+        """
+        key = (
+            tenant_key
+            or self._settings.tenant_subdomain
+            or self._settings.tenant_name
+        )
+        if not key:
+            raise SdwanApiError("activate_tenant_context requires tenant_key or SDWAN_TENANT_* env")
+        if self._vsession_id and getattr(self, "_active_tenant_key", None) == key.strip().lower():
+            logger.info("Tenant context already active for %r", key)
+            return getattr(self, "_active_tenant_id", "")
+        tid = self._resolve_tenant_id(key)
+        data = self.dataservice_post_json(f"/dataservice/tenant/{tid}/vsessionid", json_body={})
+        self._vsession_id = data.get("VSessionId") or data.get("vSessionId")
+        if not self._vsession_id:
+            raise SdwanApiError("POST /dataservice/tenant/.../vsessionid did not return VSessionId")
+        logger.info("VSessionId obtained for tenant match %r", key)
+        self._active_tenant_key = key.strip().lower()
+        self._active_tenant_id = tid
+        self._refresh_csrf_for_tenant_context()
+        return tid
+
+    def _refresh_csrf_for_tenant_context(self) -> None:
+        """After VSessionId, pair XSRF to the tenant-scoped session (Bearer + VSessionId)."""
+        if not self._jwt_token or not self._vsession_id:
+            return
+        try:
+            r = self._client.get(
+                "/dataservice/client/token",
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": f"Bearer {self._jwt_token}",
+                    "VSessionId": self._vsession_id,
+                },
+            )
+            if r.is_success:
+                tok = (r.text or "").strip().strip('"')
+                if tok and len(tok) < 500:
+                    self._csrf = tok
+                    logger.info("XSRF refreshed for tenant VSessionId context")
+        except httpx.HTTPError as exc:
+            logger.debug("Tenant CSRF refresh failed: %s", exc)
 
     def _default_headers(self, method: str, *, omit_xsrf: bool = False) -> dict[str, str]:
         h: dict[str, str] = {"Accept": "application/json"}
@@ -231,11 +285,11 @@ class ManagerClient:
         if self._vsession_id:
             h["VSessionId"] = self._vsession_id
         m = method.upper()
-        if (
-            not omit_xsrf
-            and m in {"POST", "PUT", "PATCH", "DELETE"}
-            and self._csrf
-        ):
+        tenant_ctx = bool(getattr(self, "_active_tenant_key", None) and self._vsession_id)
+        needs_xsrf = m in {"POST", "PUT", "PATCH", "DELETE"} or (
+            tenant_ctx and m == "GET"
+        )
+        if not omit_xsrf and needs_xsrf and self._csrf:
             h["X-XSRF-TOKEN"] = self._csrf
         return h
 

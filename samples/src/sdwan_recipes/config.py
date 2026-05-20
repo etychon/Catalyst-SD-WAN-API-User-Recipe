@@ -29,6 +29,7 @@ class Settings:
     # Multitenant (see docs/multitenant-clusters.md)
     tenant: str | None = None  # JWT login body "tenant" when set; optional tenant UUID context
     tenant_subdomain: str | None = None  # Session-only: provider-as-tenant via GET /tenant + vsessionid
+    tenant_name: str | None = None  # Provider-as-tenant: match tenant list name or subDomain (JWT or session)
     vsession_id: str | None = None  # Optional header VSessionId (any auth mode) when already known
 
     @staticmethod
@@ -56,7 +57,10 @@ class Settings:
         jwt_duration = int(dur_raw) if dur_raw else None
         tenant = os.getenv("SDWAN_TENANT", "").strip() or None
         tenant_subdomain = os.getenv("SDWAN_TENANT_SUBDOMAIN", "").strip() or None
+        tenant_name = os.getenv("SDWAN_TENANT_NAME", "").strip() or None
         vsession_id = os.getenv("SDWAN_VSESSION_ID", "").strip() or None
+        if tenant_name and tenant_subdomain:
+            raise ValueError("Set only one of SDWAN_TENANT_NAME or SDWAN_TENANT_SUBDOMAIN")
         if tenant_subdomain and mode != "session":
             raise ValueError(
                 "SDWAN_TENANT_SUBDOMAIN requires SDWAN_AUTH_MODE=session "
@@ -78,5 +82,6 @@ class Settings:
             jwt_refresh=jwt_refresh,
             tenant=tenant,
             tenant_subdomain=tenant_subdomain,
+            tenant_name=tenant_name,
             vsession_id=vsession_id,
         )

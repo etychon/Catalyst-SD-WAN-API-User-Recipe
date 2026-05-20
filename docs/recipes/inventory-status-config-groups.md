@@ -12,6 +12,8 @@ related_script: samples/scripts/inventory_status.py
 
 # Inventory status (in sync, out of sync, configuration group)
 
+> **UX 2.0 vs classic:** This recipe probes **legacy / mixed** dataservice endpoints (templates, `/dataservice/device/config/group`). It does **not** implement the UX 2.0 configuration group workflow. For listing groups by solution, per-group device association, drift, and deploy, use **[config-group-ux2-sync-deploy.md](config-group-ux2-sync-deploy.md)** and [samples/scripts/config_group_ux2.py](../../samples/scripts/config_group_ux2.py).
+
 ## Outcome
 
 Widgets that show **configuration compliance**, **attachment to templates or configuration groups**, and **high-level sync state** alongside inventory.

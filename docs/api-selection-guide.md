@@ -22,7 +22,8 @@ Avoid:
 | Use case | Primary endpoints | Notes |
 | --- | --- | --- |
 | Overlay inventory | `GET /device`, `GET /system/device/{deviceCategory}` | `/device` is useful for connected overlay inventory, system IP, hostname, site ID, reachability, latitude, longitude, and status. `/system/device/vedges` and controller categories expose config status and management metadata. |
-| Device inventory status | `GET /device/status`, `GET /system/device/vedges`, `GET /v1/config-group/{configGroupId}` | Use `configStatusMessage`, `templateStatus`, `managed-by`, `name`, and config group state where available. |
+| Device inventory status (legacy / mixed) | `GET /device/status`, `GET /system/device/vedges`, `GET /template/device/config/attached` | Template and vedge sync fields; see [inventory-status-config-groups.md](recipes/inventory-status-config-groups.md). |
+| UX 2.0 configuration groups | `GET /v1/config-group?solution=`, `GET /v1/config-group/{configGroupId}/device/associate`, `POST /v1/config-group/{configGroupId}/device/deploy` | List by `solution` (`sdwan`, `sd-routing`); drift via `configGroupUpToDate`; deploy requires write RBAC. See [config-group-ux2-sync-deploy.md](recipes/config-group-ux2-sync-deploy.md). **Classic templates not supported.** |
 | Health summary | `GET /health/devices` | Good dashboard entry point for CPU, memory, health, reachability, control connections, BFD sessions, OMP peers, and coordinates. |
 | Real-time device health | `GET /device/system/status?deviceId=...`, `GET /device/counters?deviceId=...`, `GET /device/bfd/summary?deviceId=...` | Use when an operator drills into one device. |
 | Interfaces and IPs | `GET /device/interface?deviceId=...`, `GET /statistics/interface/type?query=...` | Use real-time interface state for current view and statistics for time-series traffic. |

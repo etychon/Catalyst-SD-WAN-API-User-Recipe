@@ -39,7 +39,8 @@ Start with read-only permissions:
 - Interface read.
 - Routing read for BFD state.
 - Alarm/event/audit read.
-- Config group read if showing assignment and drift.
+- Config group read if showing assignment and drift (`Config Group-read`, `Config Group > Device-read` on UX 2.0 APIs).
+- Config group deploy only for dedicated automation accounts (`Config Group > Device > Deploy-write` per DevNet).
 
 Only grant write permissions for automation workflows that intentionally change SD-WAN Manager state.
 
@@ -59,9 +60,13 @@ See also: [01-auth-and-sessions.md](01-auth-and-sessions.md).
 
 ## Agent Guardrails
 
-AI agents using these recipes should default to read-only endpoints. Require explicit approval before:
+AI agents using these recipes should default to read-only endpoints.
 
-- Deploying templates or configuration groups.
+**UX 2.0 configuration groups:** Documentation and samples in this repository may describe **deploy** and other write APIs for configuration groups ([config-group-ux2-sync-deploy.md](recipes/config-group-ux2-sync-deploy.md)). That is intentional for operators automating compliance workflows. **Runtime best practice:** do not call deploy or provision POST APIs until the operator explicitly confirms (sample scripts require `--deploy` and `--confirm-deploy` together; agents should obtain human approval per change).
+
+Require explicit approval before:
+
+- Deploying **classic device templates** or pushing template changes (out of scope for the UX 2.0 config group recipe).
 - Changing policies.
 - Clearing alarms.
 - Changing RBAC.

@@ -17,7 +17,8 @@ Exact paths differ by feature and release patch — confirm in OpenAPI:
 - **Devices:** `/dataservice/device`
 - **Device interfaces:** paths matching `device/interface` in OpenAPI (used in inventory recipe)
 - **Alarms / events:** alarm and event resources under monitoring and troubleshooting sections
-- **Configuration attachment / sync:** configuration or template attachment resources for “in sync” semantics
+- **Configuration attachment / sync (legacy):** template attachment resources for classic “in sync” semantics
+- **UX 2.0 configuration groups:** [Get Config Group By Solution](https://developer.cisco.com/docs/sdwan/get-config-group-by-solution/), [Get Config Group Association](https://developer.cisco.com/docs/sdwan/get-config-group-association/), [Deploy Config Group](https://developer.cisco.com/docs/sdwan/deploy-config-group/) — recipe [config-group-ux2-sync-deploy.md](../recipes/config-group-ux2-sync-deploy.md)
 
 When a sample script receives `404` or empty data, first verify **RBAC** for the API user, then verify the **feature** is enabled on the platform.
 
