@@ -39,7 +39,7 @@ OT-focused entry: [docs/recipes/ot-minimal-pack.md](docs/recipes/ot-minimal-pack
 | [DISCLAIMER.md](DISCLAIMER.md) | Not Cisco-official; as-is; no support; trademarks |
 | [repo-manifest.json](repo-manifest.json) | Machine-oriented path index and flags |
 | [AGENTS.md](AGENTS.md) | Conventions for LLM agents |
-| [docs/](docs/) | Foundation guides (`00`–`02`), extended guides, [recipes](docs/recipes/) |
+| [docs/](docs/) | Foundation guides (`00`–`02`), extended guides, [recipes](docs/recipes/), [roadmap](docs/ROADMAP.md) |
 | [docs/reference/](docs/reference/) | DevNet link index and glossary |
 | [docs/incorporated-starter-pack/](docs/incorporated-starter-pack/) | Preserved starter-pack recipes + crosswalk |
 | [samples/](samples/) | Installable Python package + `scripts/` |
@@ -132,6 +132,10 @@ Alternatively, from the repo root: `pip install -r requirements.txt` and set `PY
 | `multitenant_context.py` | Multi-tenant probe (server, tenant list, device sample) |
 | `smoke_recipes.py` | Run all recipe scripts against `samples/.env` (lab/CI gate) |
 | `collect_dashboard_snapshot.py` | Health + inventory merge, drilldowns, alarms/audit POST queries |
+
+## Roadmap
+
+Planned enhancements (including **data caps on specific links**, deploy job polling, and safer deploy filters) are tracked in **[docs/ROADMAP.md](docs/ROADMAP.md)**. Contributions welcome per [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Contributing and publishing hygiene
 

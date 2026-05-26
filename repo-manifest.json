@@ -7,6 +7,7 @@
   "license": "LICENSE",
   "api_reference_release": "20.18",
   "primary_human_docs": ["README.md", "DISCLAIMER.md", "AGENTS.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md"],
+  "roadmap": "docs/ROADMAP.md",
   "foundation_guides": [
     "docs/00-overview.md",
     "docs/01-auth-and-sessions.md",

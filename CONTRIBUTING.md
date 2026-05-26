@@ -6,6 +6,10 @@ Thank you for helping improve this repository. Before you contribute, please rea
 
 All participants must follow the **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)**. Violations may result in removal from discussions or blocked contributions at maintainer discretion.
 
+## Roadmap
+
+See **[docs/ROADMAP.md](docs/ROADMAP.md)** for planned recipes and samples (backlog, not a release schedule). Pick an item there or propose a new one in your PR description.
+
 ## What to contribute
 
 - **Documentation:** clarifications, corrections, or new recipes that stay aligned with [Cisco DevNet SD-WAN API 20.18](https://developer.cisco.com/docs/sdwan/) and label anything unvalidated in the field.

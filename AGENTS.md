@@ -45,3 +45,7 @@ Use this repository as **human-readable documentation** plus **executable exampl
 ## Authoritative API reference
 
 [Cisco DevNet — SD-WAN Manager API 20.18](https://developer.cisco.com/docs/sdwan/). When endpoint paths or JSON fields differ in the field, **trust DevNet and live Manager responses** over this repo; recipes label illustrative shapes where needed.
+
+## Planned work
+
+Future recipes and enhancements (e.g. **data caps on specific links**, deploy job polling): [docs/ROADMAP.md](docs/ROADMAP.md).
