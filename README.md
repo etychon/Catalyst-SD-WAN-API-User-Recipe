@@ -6,51 +6,50 @@
   Legal / support stance: see DISCLAIMER.md (not a Cisco initiative; as-is; no support)
 -->
 
-## Why this repository exists
+**Goal:** Help teams build SD-WAN monitoring views and automations **without starting from raw API documentation** — using plain-language recipes, design guides, and optional lab scripts.
 
-Operators, partners, and automation teams repeatedly build the **same kinds of dashboards** on Cisco Catalyst SD-WAN Manager: inventory, reachability, tunnel and transport health, cellular signal, alarms, audit context, and multi-cluster rollups. Official [DevNet API documentation](https://developer.cisco.com/docs/sdwan/) is authoritative for each endpoint, but it is organized for **API discovery**, not for **end-to-end dashboard workflows**.
+## New here?
 
-This repo fills that gap by providing:
+Start with **[docs/START-HERE.md](docs/START-HERE.md)** — a guided tour that does not assume API or programming knowledge.
 
-1. **Recipes** — short, use-case-driven Markdown with YAML frontmatter (easy for humans and for LLMs to filter) describing outcomes, data sources, orchestration order, field mapping, and edge cases.
-2. **Runnable samples** — Python scripts under `samples/scripts/` that **chain multiple calls** per workflow (closer to real collectors than one-off Swagger tries).
-3. **Architecture and operations notes** — retention, RBAC, scaling, and security patterns that belong in your design docs, not only in product UI help.
+- [Concepts — ideas before APIs](docs/concepts.md)
+- [Recipes — find by goal](docs/recipes/README.md)
 
-**What this is not:** an official Cisco deliverable, a substitute for TAC, or a guarantee of API compatibility across every Manager patch level. Always validate in your lab and against your release’s OpenAPI.
+![How this repository is organized](docs/assets/repo-map.svg)
+
+## Who this is for
+
+| You are… | Start with |
+|----------|------------|
+| **Operator** (OT or NOC) | [START-HERE](docs/START-HERE.md) → [recipes](docs/recipes/README.md) |
+| **Architect** designing dashboards | [concepts](docs/concepts.md) → [dashboard architecture](docs/dashboard-architecture.md) |
+| **Developer** building collectors | [START-HERE lab try](docs/START-HERE.md#5-minute-lab-try) → [authentication](docs/01-auth-and-sessions.md) |
+| **MSP** on multi-tenant Manager | [multitenant clusters](docs/multitenant-clusters.md) → [multitenant recipe](docs/recipes/multitenant-connectivity.md) |
+
+This repo provides **recipes** (workflow docs), **runnable samples** (Python scripts for labs), and **architecture notes** (auth, scale, security). Official [DevNet API documentation](https://developer.cisco.com/docs/sdwan/) remains authoritative for each endpoint.
+
+**What this is not:** an official Cisco deliverable, a substitute for TAC, or a guarantee of API compatibility across every Manager patch level. Always validate in your lab.
 
 ## Disclaimer (required reading)
 
-This content is provided **“as is”**, **without Cisco support**, and is **not a Cisco initiative**. Cisco trademarks are used descriptively only. See **[DISCLAIMER.md](DISCLAIMER.md)** and **[LICENSE](LICENSE)** before use or redistribution.
-
-## Audience
-
-- **Partners** building repeatable customer integrations.
-- **IT/OT architects** and operators who want opinionated monitoring views without exposing every Manager screen.
-- **Automation and AI-assisted workflows** that need stable file paths and conventions (see [AGENTS.md](AGENTS.md) and [repo-manifest.json](repo-manifest.json)).
-
-OT-focused entry: [docs/recipes/ot-minimal-pack.md](docs/recipes/ot-minimal-pack.md).
+This content is provided **“as is”**, **without Cisco support**, and is **not a Cisco initiative**. See **[DISCLAIMER.md](DISCLAIMER.md)** and **[LICENSE](LICENSE)** before use or redistribution.
 
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute safely and effectively |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards (Contributor Covenant 2.1) |
-| [DISCLAIMER.md](DISCLAIMER.md) | Not Cisco-official; as-is; no support; trademarks |
-| [repo-manifest.json](repo-manifest.json) | Machine-oriented path index and flags |
+| [docs/START-HERE.md](docs/START-HERE.md) | Human onboarding and persona paths |
+| [docs/concepts.md](docs/concepts.md) | Plain-language concepts |
+| [docs/assets/](docs/assets/) | SVG diagrams for navigation |
+| [docs/recipes/](docs/recipes/) | Use-case workflows |
+| [docs/](docs/) | Foundation and extended guides, [roadmap](docs/ROADMAP.md) |
+| [samples/](samples/) | Python scripts and library |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 | [AGENTS.md](AGENTS.md) | Conventions for LLM agents |
-| [docs/](docs/) | Foundation guides (`00`–`02`), extended guides, [recipes](docs/recipes/), [roadmap](docs/ROADMAP.md) |
-| [docs/reference/](docs/reference/) | DevNet link index and glossary |
-| [docs/incorporated-starter-pack/](docs/incorporated-starter-pack/) | Preserved starter-pack recipes + crosswalk |
-| [samples/](samples/) | Installable Python package + `scripts/` |
 
-## Prerequisites
+## For developers — quick start (samples)
 
-- Cisco Catalyst SD-WAN Manager **20.18.x** (other releases may differ).
-- Credentials and Manager URLs **only** via environment variables or a vault — never committed files.
-- Python **3.10+** for samples.
-
-## Quick start (samples)
+Prerequisites: Manager **20.18.x**, Python **3.10+**, credentials via `.env` only (never committed).
 
 ```bash
 cd samples
@@ -62,22 +61,21 @@ cp .env.example .env
 python scripts/inventory_devices.py --limit 5
 ```
 
-Full snapshot (health + inventory + drilldowns + alarms/audit), aligned with [docs/dashboard-architecture.md](docs/dashboard-architecture.md):
+Step-by-step for non-developers: [docs/START-HERE.md#5-minute-lab-try](docs/START-HERE.md#5-minute-lab-try).
+
+Full snapshot (health + inventory + drilldowns + alarms/audit):
 
 ```bash
 python scripts/collect_dashboard_snapshot.py --hours 24 --output output/dashboard_snapshot.json
 ```
 
-Alternatively, from the repo root: `pip install -r requirements.txt` and set `PYTHONPATH=samples/src` when running scripts; **`pip install -e samples` is still recommended** for imports.
+**Security defaults:** TLS verification on. Lab-only: `SDWAN_VERIFY_SSL=false`. See [security guide](docs/security-rbac-secrets.md).
 
-**Security defaults:** TLS verification on. Lab-only: `SDWAN_VERIFY_SSL=false` or `collect_dashboard_snapshot.py --insecure`.
+---
 
-**Password hygiene:** Prefer `SDWAN_PASSWORD_PROMPT=1` and omit `SDWAN_PASSWORD` where possible (see [samples/examples/config.example.env](samples/examples/config.example.env)).
+## Full reference index
 
-**Env template:** [samples/.env.example](samples/.env.example) lists all variables (including optional `SDWAN_JWT_*` bearer-from-env).
-
-## Documentation index
-
+- [Start here](docs/START-HERE.md) · [Concepts](docs/concepts.md) · [Roadmap](docs/ROADMAP.md)
 - [Overview — Manager vs devices, polling patterns](docs/00-overview.md)
 - [Authentication — JWT and session](docs/01-auth-and-sessions.md)
 - [Scale — pagination, multi-cluster](docs/02-rate-limits-scale.md)

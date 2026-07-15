@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" role="img" aria-labelledby="title desc">
+  <title id="title">Anatomy of a recipe</title>
+  <desc id="desc">Sections of a recipe document: outcome, steps, sample script, and DevNet reference.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"/>
+    </marker>
+    <style>
+      .box { fill: none; stroke: currentColor; stroke-width: 2; rx: 8; }
+      .label { font-family: system-ui, sans-serif; font-size: 14px; fill: currentColor; }
+      .small { font-size: 12px; }
+      .arrow { stroke: currentColor; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect class="box" x="40" y="40" width="720" height="56"/>
+  <text class="label" x="400" y="64" text-anchor="middle">Outcome  what question does this answer?</text>
+  <text class="label small" x="400" y="82" text-anchor="middle">Plain language: e.g. Which devices are unreachable?</text>
+
+  <line class="arrow" x1="400" y1="96" x2="400" y2="116"/>
+
+  <rect class="box" x="40" y="116" width="720" height="56"/>
+  <text class="label" x="400" y="140" text-anchor="middle">Data sources and orchestration</text>
+  <text class="label small" x="400" y="158" text-anchor="middle">What to ask the Manager, in what order (technical detail)</text>
+
+  <line class="arrow" x1="400" y1="172" x2="400" y2="192"/>
+
+  <rect class="box" x="40" y="192" width="340" height="56"/>
+  <text class="label" x="210" y="216" text-anchor="middle">Field mapping and edge cases</text>
+  <text class="label small" x="210" y="234" text-anchor="middle">Columns, pitfalls, lab notes</text>
+
+  <rect class="box" x="420" y="192" width="340" height="56"/>
+  <text class="label" x="590" y="216" text-anchor="middle">Sample script</text>
+  <text class="label small" x="590" y="234" text-anchor="middle">samples/scripts/*.py</text>
+
+  <line class="arrow" x1="210" y1="248" x2="400" y2="280"/>
+  <line class="arrow" x1="590" y1="248" x2="400" y2="280"/>
+
+  <rect class="box" x="240" y="280" width="320" height="56"/>
+  <text class="label" x="400" y="304" text-anchor="middle">DevNet API reference</text>
+  <text class="label small" x="400" y="322" text-anchor="middle">Authoritative endpoint documentation (20.18)</text>
+</svg>

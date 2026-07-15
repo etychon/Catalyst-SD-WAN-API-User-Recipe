@@ -2,6 +2,8 @@
 
 Official references: [Cisco DevNet — SD-WAN Manager API](https://developer.cisco.com/docs/sdwan/), multitenant flows such as [V Session Id](https://developer.cisco.com/docs/sdwan/v-session-id/) and tenant APIs under `/dataservice/tenant`. This document is **not** a substitute for DevNet or your SP runbook; field names and RBAC differ by patch and license.
 
+**Who this is for:** Managed service providers and anyone on a provider-operated Manager with multiple customer tenants. Plain-language summary: [concepts — multi-tenant](concepts.md#multi-tenant-deployments).
+
 ## Concepts
 
 | Idea | Meaning |
@@ -64,7 +66,20 @@ Optional **`SDWAN_VSESSION_ID`:** use only if your SP gives you a VSessionId for
 - **Script:** [samples/scripts/multitenant_context.py](../samples/scripts/multitenant_context.py) — probes `client/server`, tenant list, and a small device sample.
 - **Recipe:** [docs/recipes/multitenant-connectivity.md](recipes/multitenant-connectivity.md)
 
-## Related
+---
 
-- [Authentication — JWT and session](01-auth-and-sessions.md)
-- [Scale and multi-Manager](02-rate-limits-scale.md) (different topic: multiple Managers, not tenant RBAC on one Manager)
+## In plain language
+
+On a multi-tenant Manager, a **provider** user can see all customers and must often **pick a tenant** before config and inventory APIs return the right data. A **tenant** user only sees their own organization.
+
+## Where to go next
+
+- [Multi-tenant connectivity recipe](recipes/multitenant-connectivity.md)
+- [UX 2.0 config groups](recipes/config-group-ux2-sync-deploy.md)
+- [Authentication](01-auth-and-sessions.md)
+- [START-HERE — MSP path](START-HERE.md#msp--multi-tenant-operator)
+
+## Technical details
+
+- [Scale and multi-Manager](02-rate-limits-scale.md) (multiple Managers, not tenant RBAC on one Manager)
+- [samples/scripts/multitenant_context.py](../samples/scripts/multitenant_context.py)

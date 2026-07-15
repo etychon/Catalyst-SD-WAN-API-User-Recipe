@@ -1,5 +1,7 @@
 # Incorporated starter pack (source: "New project 2")
 
+> **Note:** Prefer the maintained docs: [START-HERE](../START-HERE.md), [recipes](../recipes/README.md), and [concepts](../concepts.md). This folder preserves historical recipe text for reference.
+
 This folder preserves the **original recipe markdown** and structure from the starter knowledge pack that was merged into the main repository.
 
 ## How to use it

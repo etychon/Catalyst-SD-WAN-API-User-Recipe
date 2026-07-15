@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-labelledby="title desc">
+  <title id="title">Choose your reading path</title>
+  <desc id="desc">Decision tree from your role to the first documentation to open.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"/>
+    </marker>
+    <style>
+      .box { fill: none; stroke: currentColor; stroke-width: 2; rx: 8; }
+      .diamond { fill: none; stroke: currentColor; stroke-width: 2; }
+      .label { font-family: system-ui, sans-serif; font-size: 13px; fill: currentColor; }
+      .small { font-size: 11px; }
+      .arrow { stroke: currentColor; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect class="box" x="300" y="16" width="200" height="48"/>
+  <text class="label" x="400" y="46" text-anchor="middle">What is your role?</text>
+
+  <polygon class="diamond" points="400,100 480,140 400,180 320,140"/>
+  <text class="label" x="400" y="144" text-anchor="middle">Pick one</text>
+
+  <line class="arrow" x1="400" y1="64" x2="400" y2="100"/>
+
+  <rect class="box" x="20" y="220" width="140" height="64"/>
+  <text class="label" x="90" y="248" text-anchor="middle">OT / plant</text>
+  <text class="label small" x="90" y="266" text-anchor="middle">operator</text>
+
+  <rect class="box" x="180" y="220" width="140" height="64"/>
+  <text class="label" x="250" y="248" text-anchor="middle">NOC / IT</text>
+  <text class="label small" x="250" y="266" text-anchor="middle">operator</text>
+
+  <rect class="box" x="340" y="220" width="140" height="64"/>
+  <text class="label" x="410" y="248" text-anchor="middle">Dashboard</text>
+  <text class="label small" x="410" y="266" text-anchor="middle">builder</text>
+
+  <rect class="box" x="500" y="220" width="140" height="64"/>
+  <text class="label" x="570" y="248" text-anchor="middle">Automation</text>
+  <text class="label small" x="570" y="266" text-anchor="middle">developer</text>
+
+  <rect class="box" x="660" y="220" width="120" height="64"/>
+  <text class="label" x="720" y="248" text-anchor="middle">MSP</text>
+  <text class="label small" x="720" y="266" text-anchor="middle">multi-tenant</text>
+
+  <line class="arrow" x1="340" y1="160" x2="90" y2="220"/>
+  <line class="arrow" x1="370" y1="175" x2="250" y2="220"/>
+  <line class="arrow" x1="400" y1="180" x2="410" y2="220"/>
+  <line class="arrow" x1="430" y1="175" x2="570" y2="220"/>
+  <line class="arrow" x1="460" y1="160" x2="720" y2="220"/>
+
+  <rect class="box" x="20" y="340" width="140" height="56"/>
+  <text class="label small" x="90" y="364" text-anchor="middle">ot-minimal-pack</text>
+  <text class="label small" x="90" y="380" text-anchor="middle">recipe</text>
+
+  <rect class="box" x="180" y="340" width="140" height="56"/>
+  <text class="label small" x="250" y="364" text-anchor="middle">inventory +</text>
+  <text class="label small" x="250" y="380" text-anchor="middle">health recipes</text>
+
+  <rect class="box" x="340" y="340" width="140" height="56"/>
+  <text class="label small" x="410" y="364" text-anchor="middle">concepts +</text>
+  <text class="label small" x="410" y="380" text-anchor="middle">dashboard-arch</text>
+
+  <rect class="box" x="500" y="340" width="140" height="56"/>
+  <text class="label small" x="570" y="364" text-anchor="middle">START-HERE</text>
+  <text class="label small" x="570" y="380" text-anchor="middle">+ auth guide</text>
+
+  <rect class="box" x="660" y="340" width="120" height="56"/>
+  <text class="label small" x="720" y="364" text-anchor="middle">multitenant</text>
+  <text class="label small" x="720" y="380" text-anchor="middle">guides</text>
+
+  <line class="arrow" x1="90" y1="284" x2="90" y2="340"/>
+  <line class="arrow" x1="250" y1="284" x2="250" y2="340"/>
+  <line class="arrow" x1="410" y1="284" x2="410" y2="340"/>
+  <line class="arrow" x1="570" y1="284" x2="570" y2="340"/>
+  <line class="arrow" x1="720" y1="284" x2="720" y2="340"/>
+
+  <text class="label small" x="400" y="440" text-anchor="middle">All paths begin at docs/START-HERE.md for context</text>
+</svg>

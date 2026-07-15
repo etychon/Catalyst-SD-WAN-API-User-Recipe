@@ -47,3 +47,20 @@ python scripts/location_history_demo.py --db ./demo.sqlite3
 ```
 
 Source: [samples/scripts/location_history_demo.py](../../samples/scripts/location_history_demo.py)
+
+---
+
+## In plain language
+
+Answers: **How do we keep weeks of location or movement history?** The Manager is not a long-term warehouse — this recipe describes exporting snapshots into **your** database on a schedule.
+
+## Where to go next
+
+- [Topology and GPS](topology-location-gps.md)
+- [Data retention guide](../data-retention.md)
+- [Cellular signal history](cellular-signal-thresholds.md)
+
+## Technical details
+
+- [Scale guide](../02-rate-limits-scale.md)
+- [Dashboard architecture](../dashboard-architecture.md)

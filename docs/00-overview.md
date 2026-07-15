@@ -2,6 +2,10 @@
 
 **Release focus:** 20.18 ([DevNet](https://developer.cisco.com/docs/sdwan/)). This overview is educational reference material only; see [DISCLAIMER.md](../DISCLAIMER.md).
 
+**Who this is for:** Architects and developers building collectors or dashboards. If you prefer plain language first, read [concepts](concepts.md) and [START-HERE](START-HERE.md).
+
+![Monitoring data flow](assets/monitoring-data-flow.svg)
+
 ## What Cisco Catalyst SD-WAN Manager is
 
 Cisco Catalyst SD-WAN Manager (successor branding to *vManage* in many contexts) is the **control and visibility plane** for the SD-WAN overlay. It centralizes:
@@ -52,8 +56,21 @@ flowchart LR
 - **OT-focused:** prioritize inventory, alarms, cellular/WAN health, and a small set of maps. See [ot-minimal-pack.md](recipes/ot-minimal-pack.md).
 - **IT / multi-cluster:** add federation, consistent `cluster_id` tagging, and centralized retention — see [02-rate-limits-scale.md](02-rate-limits-scale.md).
 
-## Related reading
+---
 
+## In plain language
+
+Your custom dashboard asks the Manager for answers on a schedule: what devices exist, are they up, and what is wrong. The Manager aggregates reports from edge devices; you decide how often to poll and where to store history.
+
+## Where to go next
+
+- [Concepts — ideas before APIs](concepts.md)
 - [Authentication](01-auth-and-sessions.md)
+- [Dashboard architecture](dashboard-architecture.md)
+- [Recipes index](recipes/README.md)
+
+## Technical details
+
 - [Scale and multi-cluster](02-rate-limits-scale.md)
 - [API index (DevNet links)](reference/api-index.md)
+- [Glossary](reference/glossary.md)

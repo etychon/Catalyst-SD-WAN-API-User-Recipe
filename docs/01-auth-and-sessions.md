@@ -2,6 +2,8 @@
 
 Official reference: [Authentication — Cisco Catalyst SD-WAN Manager API, Release 20.18](https://developer.cisco.com/docs/sdwan/authentication/).
 
+**Do I need this to read recipes?** No — only if you run [samples](../samples/scripts/) or build your own collector. For a plain-language intro, see [START-HERE](START-HERE.md) and [concepts](concepts.md).
+
 ## Principles (no plaintext passwords in artifacts)
 
 - Store credentials in **environment variables**, a **secrets manager**, or **vault** — never in Git, never in screenshots attached to tickets.
@@ -52,8 +54,21 @@ See [samples/.env.example](../samples/.env.example): `SDWAN_AUTH_MODE=jwt`, `ses
 
 See **[multitenant-clusters.md](multitenant-clusters.md)** for when to use `SDWAN_TENANT`, `SDWAN_TENANT_SUBDOMAIN`, and `SDWAN_VSESSION_ID`, and how they map to session vs JWT flows. Runnable probe: `samples/scripts/multitenant_context.py`.
 
-## Related
+---
+
+## In plain language
+
+Authentication proves your automation is allowed to ask the Manager for data. Use a dedicated service account, store passwords in a vault, and log in once per job — not on every API call.
+
+## Where to go next
+
+- [Security, RBAC, secrets](security-rbac-secrets.md)
+- [Multi-tenant clusters](multitenant-clusters.md)
+- [5-minute lab try](START-HERE.md#5-minute-lab-try)
+- [Scale — session limits](02-rate-limits-scale.md)
+
+## Technical details
 
 - [Python client implementation](../samples/src/sdwan_recipes/client.py)
-- [Scale implications of session limits](02-rate-limits-scale.md)
-- [Multi-tenant clusters — provider, tenant, VSessionId](multitenant-clusters.md)
+- [samples/.env.example](../samples/.env.example)
+- [Cisco DevNet — Authentication](https://developer.cisco.com/docs/sdwan/authentication/)

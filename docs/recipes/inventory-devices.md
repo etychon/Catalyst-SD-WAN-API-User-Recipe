@@ -66,3 +66,22 @@ python scripts/inventory_devices.py --limit 5
 ```
 
 Source: [samples/scripts/inventory_devices.py](../../samples/scripts/inventory_devices.py)
+
+---
+
+## In plain language
+
+Answers: **What devices do we have?** **Which interfaces and IP addresses are on each device?** **Can we reach them?** Use this as the first step in almost any monitoring workflow.
+
+## Where to go next
+
+- [Health, CPU, memory, tunnels](health-cpu-mem-tunnels.md)
+- [Transport / underlay](transport-underlay-monitoring.md)
+- [OT minimal pack](ot-minimal-pack.md)
+- [Concepts — edge devices](../concepts.md)
+
+## Technical details
+
+- [Authentication](../01-auth-and-sessions.md)
+- [API selection — inventory row](../api-selection-guide.md)
+- [Field dictionary](../field-dictionary-device-health.md)

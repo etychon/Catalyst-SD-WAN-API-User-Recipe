@@ -1,5 +1,7 @@
 # Dashboard Architecture
 
+**Who this is for:** Anyone designing a custom NOC or OT dashboard fed by Manager data. Start with [concepts — your data pipeline](concepts.md#your-data-pipeline) if this feels too technical at first.
+
 ## Goals
 
 The dashboard should reduce operational effort by translating SD-WAN Manager API data into workflows:
@@ -79,3 +81,21 @@ For AI-assisted operations, expose Markdown recipes plus machine-readable JSON s
 - What thresholds are customer-specific.
 - Which actions are read-only and which mutate SD-WAN Manager.
 
+---
+
+## In plain language
+
+A good dashboard answers operational questions in one glance — not by copying every Manager screen. Collect data in layers (inventory, health, events), store what you need for history, and show OT or IT views tailored to each audience.
+
+## Where to go next
+
+- [API selection guide](api-selection-guide.md)
+- [Data retention](data-retention.md)
+- [Recipes by goal](recipes/README.md)
+- [collect_dashboard_snapshot.py](../samples/scripts/collect_dashboard_snapshot.py)
+
+## Technical details
+
+- [Overview — polling patterns](00-overview.md)
+- [Scale and multi-cluster](02-rate-limits-scale.md)
+- [Field dictionary](field-dictionary-device-health.md)

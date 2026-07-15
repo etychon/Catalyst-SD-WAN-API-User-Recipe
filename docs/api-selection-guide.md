@@ -2,6 +2,8 @@
 
 Use this guide to choose SD-WAN Manager APIs for monitoring dashboards.
 
+> **Non-API readers:** start with [concepts.md](concepts.md) and [recipes/README.md](recipes/README.md). Return here when you are ready to pick exact endpoints for a collector.
+
 **Path convention:** Unless a path already starts with `/dataservice`, the Manager serves REST APIs under the **`/dataservice`** prefix (for example `GET /dataservice/device`). The “Endpoint map” table below uses short paths (for example `GET /device`) meaning **`GET /dataservice/device`** in this repository’s samples.
 
 ## Authentication
@@ -59,3 +61,21 @@ Do not mirror the SD-WAN Manager UI. Build opinionated views:
 ## Multi-tenant Manager
 
 If your deployment is **multi-tenant**, provider automation often needs `GET /tenant` and `POST /tenant/{tenantId}/vsessionid` before dataservice reads behave as a specific tenant. Single-tenant clusters ignore this. See [multitenant-clusters.md](multitenant-clusters.md) and [recipes/multitenant-connectivity.md](recipes/multitenant-connectivity.md).
+
+---
+
+## In plain language
+
+This table maps **dashboard questions** (“show device inventory”, “list alarms”) to **Manager API families**. Use it as a lookup while implementing recipes — not as your first read.
+
+## Where to go next
+
+- [Recipes — I want to…](recipes/README.md)
+- [Dashboard architecture](dashboard-architecture.md)
+- [Authentication](01-auth-and-sessions.md)
+- [Glossary](reference/glossary.md)
+
+## Technical details
+
+- [API index — DevNet links](reference/api-index.md)
+- [Cisco DevNet — SD-WAN 20.18](https://developer.cisco.com/docs/sdwan/)

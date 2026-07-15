@@ -209,9 +209,20 @@ python scripts/config_group_ux2.py --group-id <uuid> --deploy --confirm-deploy
 
 Source: [samples/scripts/config_group_ux2.py](../../samples/scripts/config_group_ux2.py)
 
-## Related
+---
 
-- [API selection guide](../api-selection-guide.md)
-- [Security, RBAC, secrets](../security-rbac-secrets.md)
+## In plain language
+
+Answers: **Which UX 2.0 config groups exist?** **Which devices belong to each group?** **Who is out of sync and needs a push?** Covers list and drift by default; deploy only with explicit confirmation and write permissions.
+
+## Where to go next
+
+- [Legacy config sync probe](inventory-status-config-groups.md)
+- [Multi-tenant connectivity](multitenant-connectivity.md)
+- [Security — deploy RBAC](../security-rbac-secrets.md)
+
+## Technical details
+
+- [API selection — UX 2.0 config groups](../api-selection-guide.md)
 - [DevNet — Get Config Group By Solution](https://developer.cisco.com/docs/sdwan/get-config-group-by-solution/)
 - [DevNet — Deploy Config Group](https://developer.cisco.com/docs/sdwan/deploy-config-group/)

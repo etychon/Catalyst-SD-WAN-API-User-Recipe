@@ -45,7 +45,21 @@ Full narrative: [../multitenant-clusters.md](../multitenant-clusters.md).
 - **JWT login with `SDWAN_TENANT`:** only when your SP documents it; remove if login fails.
 - **Trust DevNet** over this recipe for exact JSON field names and new headers.
 
-## Related
+---
 
-- [Device inventory](inventory-devices.md) (dataservice smoke test after tenancy setup)
+## In plain language
+
+Answers: **How do I connect when my Manager hosts multiple customers?** Explains provider vs tenant users and when you must select a tenant before API calls return the right data.
+
+## Where to go next
+
+- [Multi-tenant clusters guide](../multitenant-clusters.md)
+- [UX 2.0 config groups](config-group-ux2-sync-deploy.md)
+- [START-HERE — MSP path](../START-HERE.md#msp--multi-tenant-operator)
+- [Device inventory](inventory-devices.md)
+
+## Technical details
+
 - [Authentication](../01-auth-and-sessions.md)
+- [multitenant_context.py](../../samples/scripts/multitenant_context.py)
+- [DevNet — V Session Id](https://developer.cisco.com/docs/sdwan/v-session-id/)

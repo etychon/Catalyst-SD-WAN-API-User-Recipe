@@ -2,6 +2,8 @@
 
 This guide complements [00-overview.md](00-overview.md) and [01-auth-and-sessions.md](01-auth-and-sessions.md) for designs that must grow toward **tens of thousands of devices** or **multiple Manager clusters**.
 
+**Who this is for:** Teams building production collectors or multi-cluster dashboards. Operators reading recipes only can skim the caching table and return when scaling up.
+
 ## Per-Manager constraints
 
 - **Authentication:** session concurrency and lifetime limits (see DevNet authentication page). Prefer **JWT** for automation to reduce session churn where supported.
@@ -28,7 +30,20 @@ This guide complements [00-overview.md](00-overview.md) and [01-auth-and-session
 
 OT users often need **fewer endpoints** and longer cache TTLs. Start with the [OT minimal pack](recipes/ot-minimal-pack.md) and expand only when required.
 
-## Related
+---
 
-- [Recipes index](recipes/) — each recipe calls out orchestration order and edge cases
-- [samples/scripts/federation_demo.py](../samples/scripts/federation_demo.py) — optional multi-URL merge pattern
+## In plain language
+
+Do not hammer the Manager with thousands of simultaneous requests. Poll on sensible intervals, cache slow-changing inventory, and spread jobs across time — especially when you manage multiple Manager clusters.
+
+## Where to go next
+
+- [Overview](00-overview.md)
+- [Data retention](data-retention.md)
+- [Federation demo script](../samples/scripts/federation_demo.py)
+- [Recipes index](recipes/README.md)
+
+## Technical details
+
+- [DevNet API hub](https://developer.cisco.com/docs/sdwan/)
+- [Authentication — session limits](01-auth-and-sessions.md)

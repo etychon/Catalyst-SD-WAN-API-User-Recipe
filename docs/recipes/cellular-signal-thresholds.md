@@ -177,3 +177,21 @@ Sources:
 - [samples/scripts/cellular_thresholds.py](../../samples/scripts/cellular_thresholds.py) — live-style cellular probes.
 - [samples/scripts/cellular_signal_history.py](../../samples/scripts/cellular_signal_history.py) — `uniqueAggregation` request builder + per-interface RSSI Braille output.
 - [Cisco DevNet — Unique Aggregation](https://developer.cisco.com/docs/sdwan/unique-aggregation/) — canonical request/response shapes.
+
+---
+
+## In plain language
+
+Answers: **How strong is the cellular signal?** **Should we failover before the link drops?** Use numeric RF metrics and your own thresholds instead of relying only on generic “good/fair/poor” labels.
+
+## Where to go next
+
+- [Transport / underlay](transport-underlay-monitoring.md)
+- [OT minimal pack](ot-minimal-pack.md)
+- [Location history](location-history-retention.md)
+
+## Technical details
+
+- [Field dictionary — cellular](../field-dictionary-device-health.md)
+- [API selection — cellular rows](../api-selection-guide.md)
+- [Authentication — JWT CSRF for statistics POST](../01-auth-and-sessions.md)

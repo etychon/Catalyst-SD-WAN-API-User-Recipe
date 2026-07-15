@@ -2,6 +2,8 @@
 
 This dictionary explains the fields shown in a Cisco Catalyst SD-WAN Manager JSON payload that combines device health, interface inventory/statistics, and enriched cellular radio data.
 
+**Who this is for:** Developers mapping API JSON to dashboard columns. If you only need outcomes, read the **Field mapping** sections in individual [recipes](recipes/README.md) first.
+
 Field names are kept exactly as they appear in the API response. Relationships use clickable internal references so this file can be used by humans and as LLM context.
 
 ## Reading Notes
@@ -177,3 +179,20 @@ These fields appear inside each object in [`cellular_sync_device_cellular_radio`
 - Treat `health`, `state`, and `status` as rollups, then show the reason using control connections, BFD sessions, interface state, and alarms.
 - For cellular dashboards, classify quality using multiple RF metrics and customer-specific thresholds.
 
+---
+
+## In plain language
+
+When you pull device health from the Manager, responses contain many similarly named fields. This dictionary explains what common JSON keys mean and which ones to use as join keys for dashboards.
+
+## Where to go next
+
+- [Health recipe](recipes/health-cpu-mem-tunnels.md)
+- [Cellular thresholds recipe](recipes/cellular-signal-thresholds.md)
+- [Transport / underlay recipe](recipes/transport-underlay-monitoring.md)
+- [Glossary](reference/glossary.md)
+
+## Technical details
+
+- [API selection guide](api-selection-guide.md)
+- [Cisco DevNet — SD-WAN 20.18](https://developer.cisco.com/docs/sdwan/)

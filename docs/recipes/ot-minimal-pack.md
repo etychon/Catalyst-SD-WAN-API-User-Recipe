@@ -32,3 +32,20 @@ OT teams that want **only** inventory, connectivity, cellular health, and alarms
 - [samples/scripts/inventory_devices.py](../../samples/scripts/inventory_devices.py)
 - [samples/scripts/cellular_thresholds.py](../../samples/scripts/cellular_thresholds.py)
 - [samples/scripts/alarms_events.py](../../samples/scripts/alarms_events.py)
+
+---
+
+## In plain language
+
+A **curated reading order** for plant and OT teams: inventory, cellular, and alarms — without full IT feature depth. Larger tiles and slower poll intervals are usually enough.
+
+## Where to go next
+
+- [Device inventory](inventory-devices.md)
+- [Cellular signal thresholds](cellular-signal-thresholds.md)
+- [START-HERE — OT path](../START-HERE.md#plant--ot-operator)
+
+## Technical details
+
+- [Security and credentials](../security-rbac-secrets.md)
+- [Scale — OT deployments](../02-rate-limits-scale.md)

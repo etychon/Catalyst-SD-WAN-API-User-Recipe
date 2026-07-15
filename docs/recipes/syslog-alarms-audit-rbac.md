@@ -55,3 +55,20 @@ python scripts/alarms_events.py
 ```
 
 Source: [samples/scripts/alarms_events.py](../../samples/scripts/alarms_events.py)
+
+---
+
+## In plain language
+
+Answers: **What is actively wrong?** **Who changed configuration or permissions?** Pulls alarms, events, and audit logs into security and NOC views with least-privilege service accounts.
+
+## Where to go next
+
+- [Health and tunnels](health-cpu-mem-tunnels.md)
+- [Security, RBAC, secrets](../security-rbac-secrets.md)
+- [OT minimal pack](ot-minimal-pack.md)
+
+## Technical details
+
+- [API selection — alarms and audit](../api-selection-guide.md)
+- [Authentication](../01-auth-and-sessions.md)

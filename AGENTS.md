@@ -8,6 +8,7 @@ Use this repository as **human-readable documentation** plus **executable exampl
 
 ## Start here
 
+0. **Human onboarding:** [docs/START-HERE.md](docs/START-HERE.md) and [docs/concepts.md](docs/concepts.md) — plain language, persona paths, no API prerequisite.
 1. Security: [docs/01-auth-and-sessions.md](docs/01-auth-and-sessions.md) and [docs/security-rbac-secrets.md](docs/security-rbac-secrets.md) — credentials and RBAC.
 2. Patterns: [docs/00-overview.md](docs/00-overview.md) and [docs/dashboard-architecture.md](docs/dashboard-architecture.md) — where data lives and collector architecture.
 3. Endpoints: [docs/api-selection-guide.md](docs/api-selection-guide.md) — map APIs to dashboard widgets.

@@ -1,12 +1,15 @@
 {
   "title": "Catalyst SD-WAN monitoring recipes — repository manifest",
-  "description": "Machine-oriented index. Human overview: see README.md.",
+  "description": "Machine-oriented index. Human overview: see README.md and docs/START-HERE.md.",
   "official_cisco_project": false,
   "cisco_support": false,
   "disclaimer": "DISCLAIMER.md",
   "license": "LICENSE",
   "api_reference_release": "20.18",
-  "primary_human_docs": ["README.md", "DISCLAIMER.md", "AGENTS.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md"],
+  "start_here": "docs/START-HERE.md",
+  "concepts": "docs/concepts.md",
+  "assets_glob": "docs/assets/*.svg",
+  "primary_human_docs": ["README.md", "docs/START-HERE.md", "docs/concepts.md", "DISCLAIMER.md", "AGENTS.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md"],
   "roadmap": "docs/ROADMAP.md",
   "foundation_guides": [
     "docs/00-overview.md",

@@ -2,6 +2,8 @@
 
 This guide was incorporated from a partner starter pack. It complements (and sometimes overlaps) [docs/recipes/location-history-retention.md](recipes/location-history-retention.md) and [docs/02-rate-limits-scale.md](02-rate-limits-scale.md); use all three when designing retention and scale.
 
+**Who this is for:** Architects planning how long to keep metrics, maps, and audit data **outside** the Manager. The Manager is for operations visibility, not unlimited chart history.
+
 ## Recommendation
 
 Store dashboard history outside SD-WAN Manager for a 30-day stretch. SD-WAN Manager is the source of truth for network state, but a dashboard should own its monitoring history, normalization, and cross-cluster correlation.
@@ -50,3 +52,20 @@ For mobile or cellular-heavy sites, persist location samples in a dedicated tabl
 
 Only store movement history when there is a business reason and an approved privacy policy.
 
+---
+
+## In plain language
+
+If you need 30 days of charts or location trails, plan your own database or time-series store. Poll the Manager regularly, save normalized records, and downsample old data to control cost.
+
+## Where to go next
+
+- [Location history recipe](recipes/location-history-retention.md)
+- [Dashboard architecture](dashboard-architecture.md)
+- [Scale guide](02-rate-limits-scale.md)
+- [Cellular signal over time](recipes/cellular-signal-thresholds.md)
+
+## Technical details
+
+- [location_history_demo.py](../samples/scripts/location_history_demo.py)
+- [Overview — Manager vs your store](00-overview.md)

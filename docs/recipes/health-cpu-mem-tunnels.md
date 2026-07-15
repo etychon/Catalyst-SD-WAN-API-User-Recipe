@@ -44,3 +44,22 @@ python scripts/health_tunnels.py --limit 10
 ```
 
 Source: [samples/scripts/health_tunnels.py](../../samples/scripts/health_tunnels.py)
+
+---
+
+## In plain language
+
+Answers: **Are devices healthy?** **How much CPU and memory are they using?** **Are tunnels up?** Suitable for NOC tiles and escalation workflows.
+
+## Where to go next
+
+- [Device inventory](inventory-devices.md)
+- [Transport / underlay](transport-underlay-monitoring.md)
+- [Syslog, alarms, audit](syslog-alarms-audit-rbac.md)
+- [Field dictionary](../field-dictionary-device-health.md)
+
+## Technical details
+
+- [Dashboard architecture](../dashboard-architecture.md)
+- [API selection — health row](../api-selection-guide.md)
+- [Scale guide](../02-rate-limits-scale.md)

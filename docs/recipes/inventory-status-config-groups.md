@@ -49,3 +49,20 @@ python scripts/inventory_status.py
 ```
 
 Source: [samples/scripts/inventory_status.py](../../samples/scripts/inventory_status.py)
+
+---
+
+## In plain language
+
+Answers: **Is device configuration in sync?** (Legacy / template environments.) Use when you still rely on **classic device templates** or a mixed migration state — not for UX 2.0-only config groups.
+
+## Where to go next
+
+- [UX 2.0 config groups](config-group-ux2-sync-deploy.md)
+- [Concepts — UX 1.0 vs 2.0](../concepts.md#ux-10-templates-vs-ux-20-configuration-groups)
+- [Device inventory](inventory-devices.md)
+
+## Technical details
+
+- [API selection — legacy status row](../api-selection-guide.md)
+- [Security — read-only RBAC](../security-rbac-secrets.md)

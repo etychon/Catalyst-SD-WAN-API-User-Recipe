@@ -59,7 +59,9 @@ cd samples && ruff check src scripts
 ## Documentation style
 
 - Recipes under `docs/recipes/` should keep **YAML frontmatter** (`title`, `release`, `tags`, `apis`, `related_script` where applicable).
+- End each recipe and major guide with bridge sections: **In plain language**, **Where to go next**, and **Technical details** (see existing recipes for examples).
 - Prefer linking to **DevNet** for canonical API paths rather than duplicating large OpenAPI excerpts.
+- Human onboarding lives in [docs/START-HERE.md](docs/START-HERE.md) and [docs/concepts.md](docs/concepts.md); link there when adding new top-level topics.
 
 ## Questions
 

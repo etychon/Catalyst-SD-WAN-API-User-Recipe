@@ -2,6 +2,8 @@
 
 Incorporated from a partner starter pack; pairs with [01-auth-and-sessions.md](01-auth-and-sessions.md) for JWT vs session details in **this** repository. This is **operational guidance only**; it is not Cisco support policy — see [DISCLAIMER.md](../DISCLAIMER.md).
 
+**Who this is for:** Everyone running samples or production automation. Read this before granting API accounts or enabling deploy scripts.
+
 ## Plaintext Password Controls
 
 Never put SD-WAN Manager passwords in:
@@ -72,3 +74,20 @@ Require explicit approval before:
 - Changing RBAC.
 - Running troubleshooting commands that could expose secrets.
 
+---
+
+## In plain language
+
+Use dedicated read-only API accounts for dashboards. Never put passwords in Git or logs. Treat deploy and policy changes as high-risk — require human approval and stronger RBAC.
+
+## Where to go next
+
+- [Authentication](01-auth-and-sessions.md)
+- [UX 2.0 config groups — deploy gates](recipes/config-group-ux2-sync-deploy.md)
+- [Syslog, alarms, audit recipe](recipes/syslog-alarms-audit-rbac.md)
+- [START-HERE — lab try](START-HERE.md#5-minute-lab-try)
+
+## Technical details
+
+- [samples/.env.example](../samples/.env.example)
+- [AGENTS.md](../AGENTS.md) — agent guardrails

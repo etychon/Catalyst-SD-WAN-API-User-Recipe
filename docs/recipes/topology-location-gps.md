@@ -45,3 +45,20 @@ python scripts/topology_location.py
 ```
 
 Source: [samples/scripts/topology_location.py](../../samples/scripts/topology_location.py)
+
+---
+
+## In plain language
+
+Answers: **Where are my sites on a map?** Uses coordinates from the Manager when available; you can override missing locations in your own database.
+
+## Where to go next
+
+- [Location history retention](location-history-retention.md)
+- [Device inventory](inventory-devices.md)
+- [OT minimal pack](ot-minimal-pack.md)
+
+## Technical details
+
+- [Data retention](../data-retention.md)
+- [API selection — topology row](../api-selection-guide.md)

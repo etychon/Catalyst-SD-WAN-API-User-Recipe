@@ -39,3 +39,21 @@ python scripts/transport_underlay.py --limit 10
 ```
 
 Source: [samples/scripts/transport_underlay.py](../../samples/scripts/transport_underlay.py)
+
+---
+
+## In plain language
+
+Answers: **Are WAN links up?** **Which physical or provider transports carry traffic?** Helps before blaming the overlay when the underlay fails.
+
+## Where to go next
+
+- [Health and tunnels](health-cpu-mem-tunnels.md)
+- [Cellular signal](cellular-signal-thresholds.md)
+- [Device inventory](inventory-devices.md)
+- [Roadmap — data caps](../ROADMAP.md)
+
+## Technical details
+
+- [API selection — tunnels and transport](../api-selection-guide.md)
+- [Field dictionary — interfaces](../field-dictionary-device-health.md)

@@ -35,3 +35,20 @@ python scripts/cli_bulk_demo.py --execute --limit 10
 ```
 
 Source: [samples/scripts/cli_bulk_demo.py](../../samples/scripts/cli_bulk_demo.py)
+
+---
+
+## In plain language
+
+Answers: **How do we run operational checks across many devices safely?** Read-only bulk diagnostics at scale, with dry-run defaults so you do not accidentally change devices.
+
+## Where to go next
+
+- [Device inventory](inventory-devices.md)
+- [Health and tunnels](health-cpu-mem-tunnels.md)
+- [Scale guide](../02-rate-limits-scale.md)
+
+## Technical details
+
+- [Security — agent guardrails](../security-rbac-secrets.md)
+- [Authentication](../01-auth-and-sessions.md)
