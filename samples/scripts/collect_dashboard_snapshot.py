@@ -29,6 +29,7 @@ import httpx
 
 from sdwan_recipes.client import ManagerClient, SdwanApiError
 from sdwan_recipes.config import Settings
+from sdwan_recipes.governance_query import query_last_n_hours
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("collect_dashboard_snapshot")
@@ -155,24 +156,6 @@ def collect_device_drilldown(
                 result[name] = {"error": str(exc)}
 
     return result
-
-
-def query_last_n_hours(client: ManagerClient, path: str, hours: int) -> dict[str, Any]:
-    payload = {
-        "query": {
-            "condition": "AND",
-            "rules": [
-                {
-                    "value": [str(hours)],
-                    "field": "entry_time",
-                    "type": "date",
-                    "operator": "last_n_hours",
-                }
-            ],
-        },
-        "size": 10000,
-    }
-    return client.dataservice_post_json(path, json_body=payload)
 
 
 def normalize_devices(health: Any, inventory: Any) -> list[dict[str, Any]]:

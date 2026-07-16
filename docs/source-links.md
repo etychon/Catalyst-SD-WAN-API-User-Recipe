@@ -15,4 +15,9 @@ Primary Cisco documentation used by this repository (overlaps in part with [docs
 - [Create BFD Summary](https://developer.cisco.com/docs/sdwan/create-bfd-summary/)
 - [Get App Route FEC Aggregation](https://developer.cisco.com/docs/sdwan/get-app-route-fec-agg/)
 - [API Changelog](https://developer.cisco.com/docs/sdwan/api-changelog/)
+- [Alarm and Event (alarms, events, audit)](https://developer.cisco.com/docs/sdwan/alarm-and-event/)
+- [Get Alarm Query Fields](https://developer.cisco.com/docs/sdwan/get-alarm-query-fields/)
+- [Post Count (alarms)](https://developer.cisco.com/docs/sdwan/post-count/)
+- [Audit log severity summary](https://developer.cisco.com/docs/sdwan/get-vmanage-audit-log-histogram/)
+- [User and Group (RBAC)](https://developer.cisco.com/docs/sdwan/user-and-group/)
 

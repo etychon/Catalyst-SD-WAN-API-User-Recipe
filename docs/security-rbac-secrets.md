@@ -40,9 +40,13 @@ Start with read-only permissions:
 - Device monitoring read.
 - Interface read.
 - Routing read for BFD state.
-- Alarm/event/audit read.
+- **Alarms read** — `POST /alarms`, `POST /alarms/count` (DevNet role e.g. `Alarms-read` on count APIs).
+- **Events read** — `POST /events` with query DSL.
+- **Audit read** — `POST /auditlog`; use a dedicated `audit-exporter-*` service account where possible.
 - Config group read if showing assignment and drift (`Config Group-read`, `Config Group > Device-read` on UX 2.0 APIs).
 - Config group deploy only for dedicated automation accounts (`Config Group > Device > Deploy-write` per DevNet).
+
+Governance recipe with filter examples: [syslog-alarms-audit-rbac.md](recipes/syslog-alarms-audit-rbac.md). Field discovery: `GET /alarms/query/fields`, `/events/fields`, `/auditlog/fields`.
 
 Only grant write permissions for automation workflows that intentionally change SD-WAN Manager state.
 

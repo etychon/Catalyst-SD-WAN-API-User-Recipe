@@ -129,7 +129,7 @@ def main() -> int:
                 str(out_dir / "location_history.sqlite3"),
             ],
         ),
-        ("alarms_events", [py, "scripts/alarms_events.py"]),
+        ("alarms_events", [py, "scripts/alarms_events.py", "--hours", "1"]),
         ("cli_bulk_demo", [py, "scripts/cli_bulk_demo.py", "--limit", "2"]),
         ("multitenant_context", [py, "scripts/multitenant_context.py"]),
         ]

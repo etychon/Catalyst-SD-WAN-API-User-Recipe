@@ -69,7 +69,6 @@ When you complete an item, open a PR that updates this file (move to **Done** or
 | Lab validation checklist | CONTRIBUTING appendix: redacted golden JSON for config-group associate + deploy. |
 | Offline fixture mode | Optional `--fixture` for `config_group_ux2.py` when no Manager is available. |
 | API selection row | Add [api-selection-guide.md](api-selection-guide.md) row for link QoS / data cap once DevNet paths are lab-confirmed. |
-| Audit deploy actions | Sample `POST /auditlog` filters for configuration-group deploy events ([syslog-alarms-audit-rbac.md](recipes/syslog-alarms-audit-rbac.md)). |
 
 ---
 
@@ -77,6 +76,7 @@ When you complete an item, open a PR that updates this file (move to **Done** or
 
 | Item | Notes |
 |------|--------|
+| Governance recipe (alarms, events, audit, RBAC) | [syslog-alarms-audit-rbac.md](recipes/syslog-alarms-audit-rbac.md) — API catalog, query DSL, filters; `alarms_events.py` + `governance_query.py`. |
 | UX 2.0 config groups recipe + script | [config-group-ux2-sync-deploy.md](recipes/config-group-ux2-sync-deploy.md), `config_group_ux2.py` (commit `bae8d45`). |
 | Multi-tenant provider JWT + `SDWAN_TENANT_NAME` | `activate_tenant_context()`, XSRF on GET with `VSessionId`. |
 | Legacy vs UX 2.0 inventory-status split | Banner on [inventory-status-config-groups.md](recipes/inventory-status-config-groups.md). |

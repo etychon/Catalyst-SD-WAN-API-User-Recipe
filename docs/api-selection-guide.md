@@ -33,8 +33,10 @@ Avoid:
 | Cellular status (live drill-down) | `GET /device/cellular/status?deviceId=...`, `GET /device/cellularEiolte/radio?deviceId=...` | Build your own signal classification from RSRP, RSRQ, RSSI, SINR/SNR rather than relying only on generic excellent/good/fair/poor labels. |
 | Cellular signal **over time** (statistics) | `POST /statistics/eiolte/uniqueAggregation` | Aggregated EIOLTE buckets (`header`, `entryTimeList`, `data[]` with `entry_time`, `rsrp`, `rsrq`, `rssi`, slot/SIM, `count`, …). Body must include **`aggregation`** (`field`, `metrics`, `histogram`) on current managers—see [cellular-signal-thresholds.md](recipes/cellular-signal-thresholds.md) for request/response notes and error codes. |
 | Site topology and coordinates | `GET /device`, `GET /health/devices` | Prefer Manager-provided latitude/longitude when `isDeviceGeoData` or `has_geo_data` is true. Store manual overrides in your dashboard database. |
-| Alarms and events | `POST /alarms`, `GET /events/fields` | Use POST for non-trivial queries and large query strings. |
-| Audit logs | `POST /auditlog`, `GET /auditlog/fields` | Pull audit data into a security/audit view with actor, action, severity, object, and timestamp. |
+| Alarms (query) | `POST /alarms`, `GET /alarms/query/fields`, `POST /alarms/count` | Rules-based filters: time (`entry_time`), `severity`, `system_ip`, `site_id`, `rule_name_display`, `active`. See [syslog-alarms-audit-rbac.md](recipes/syslog-alarms-audit-rbac.md). |
+| Events (query) | `POST /events`, `GET /events/fields` | Same query DSL; typical filters: `entry_time`, `severity_level`, component/event name fields (discover via fields GET). |
+| Audit logs | `POST /auditlog`, `GET /auditlog/fields`, `GET /auditlog/severity/summary` | Filter by `loguser`, `logfeature`, `logmodule`, `logdeviceid`, `severity_level`, time. |
+| RBAC visibility (read) | `GET /admin/user`, `GET /admin/usergroup`, `GET /admin/user/role` | Admin read for governance dashboards; prefer dedicated `audit-exporter-*` account. |
 
 ## API Calling Pattern
 

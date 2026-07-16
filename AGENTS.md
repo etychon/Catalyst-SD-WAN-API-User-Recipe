@@ -35,7 +35,7 @@ Use this repository as **human-readable documentation** plus **executable exampl
 | `docs/recipes/transport-underlay-monitoring.md` | `samples/scripts/transport_underlay.py` |
 | `docs/recipes/cellular-signal-thresholds.md` | `samples/scripts/cellular_thresholds.py`, `samples/scripts/cellular_signal_history.py` |
 | `docs/recipes/location-history-retention.md` | `samples/scripts/location_history_demo.py` |
-| `docs/recipes/syslog-alarms-audit-rbac.md` | `samples/scripts/alarms_events.py` |
+| `docs/recipes/syslog-alarms-audit-rbac.md` | `samples/scripts/alarms_events.py` (POST queries, `--discover-fields`, filters; shared `governance_query.py`) |
 | `docs/recipes/cli-equivalents-scale.md` | `samples/scripts/cli_bulk_demo.py` |
 | `docs/recipes/multitenant-connectivity.md` | `samples/scripts/multitenant_context.py` |
 | `docs/recipes/config-group-ux2-sync-deploy.md` | `samples/scripts/config_group_ux2.py` |
