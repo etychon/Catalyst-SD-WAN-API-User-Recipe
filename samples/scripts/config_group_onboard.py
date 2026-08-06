@@ -6,16 +6,21 @@ Automates discovery, association, device-variable provisioning, deploy, and post
 verification for ``sdwan`` and ``sd-routing`` configuration groups. Classic device
 templates are out of scope.
 
-Operator workflow
------------------
-1. **Discover** reachable devices not yet assigned to any UX 2.0 config group::
+**Primary use case:** SD-Routing (``--solution sd-routing``, the default). The script scopes
+config-group list/associate/variables/deploy APIs to SD-Routing groups unless you pass
+``--solution sdwan`` or ``--solution all``. Variables PUT bodies always use the resolved
+group ``solution`` field (never assume SD-WAN).
+
+Operator workflow (SD-Routing)
+------------------------------
+1. **Discover** reachable devices not yet assigned to any SD-Routing config group::
 
        python scripts/config_group_onboard.py --discover-unassigned --output output/unassigned.json
 
-2. **Generate a CSV template** (optional variable columns from a named group)::
+2. **Generate a CSV template** from an SD-Routing group schema::
 
        python scripts/config_group_onboard.py \\
-         --discover-unassigned --template-group MY_GROUP --output-csv output/onboard.csv
+         --discover-unassigned --template-group CG_SD_Routing_Lab --output-csv output/onboard.csv
 
 3. **Validate** CSV rows against live inventory (no Manager writes)::
 
@@ -79,8 +84,11 @@ if str(_SRC) not in sys.path:
 from sdwan_recipes.client import ManagerClient, SdwanApiError
 from sdwan_recipes.config import Settings
 from sdwan_recipes.config_group import (
+    DEFAULT_ONBOARD_SOLUTION,
+    assert_group_solution_matches,
     associate_devices_to_group,
     deploy_config_group,
+    effective_group_solution,
     find_unassigned_reachable_devices,
     get_config_group_detail,
     get_group_associations,
@@ -324,7 +332,9 @@ def run_discover(
         if template_group:
             group = resolve_config_group_by_name(client, template_group, solution=solution)
             gid = str(group.get("id") or "")
-            sol = str(group.get("solution") or "sdwan")
+            detail = get_config_group_detail(client, gid)
+            sol = effective_group_solution(group, detail, filter_solution=solution)
+            assert_group_solution_matches(template_group, sol, filter_solution=solution)
             try:
                 schema = get_group_variables_schema(client, gid)
                 var_cols = schema_variable_names(schema)
@@ -460,11 +470,13 @@ def run_csv(
             group = resolve_config_group_by_name(client, group_name, solution=solution)
             gid = str(group.get("id") or "")
             detail = get_config_group_detail(client, gid)
+            group_sol = effective_group_solution(group, detail, filter_solution=solution)
+            assert_group_solution_matches(group_name, group_sol, filter_solution=solution)
             schema = get_group_variables_schema(client, gid)
             var_names = schema_variable_names(schema)
             group_meta[group_name] = {
                 "id": gid,
-                "solution": str(group.get("solution") or detail.get("solution") or "sdwan"),
+                "solution": group_sol,
                 "variable_names_in_schema": var_names,
                 "app_hosting_hint": group_has_app_hosting_hint(detail),
             }
@@ -484,6 +496,7 @@ def run_csv(
         return {
             "mode": "csv-dry-run",
             "csv": str(csv_path),
+            "solution_filter": solution,
             "row_count": len(rows),
             "groups": group_meta,
             "results": results,
@@ -592,6 +605,7 @@ def run_csv(
     return {
         "mode": "csv-apply",
         "csv": str(csv_path),
+        "solution_filter": solution,
         "groups": group_meta,
         "deploy_tasks": deploy_tasks,
         "results": results,
@@ -631,8 +645,11 @@ def main() -> int:
     p.add_argument(
         "--solution",
         choices=["sdwan", "sd-routing", "all"],
-        default="all",
-        help="Filter configuration groups by solution",
+        default=DEFAULT_ONBOARD_SOLUTION,
+        help=(
+            "Filter configuration groups by solution (default: sd-routing). "
+            "Use sd-routing for SD-Routing config groups; sdwan for SD-WAN-only labs."
+        ),
     )
     p.add_argument("--output", type=Path, help="Write JSON report to file")
     p.add_argument("--tenant", help="Provider-as-tenant: activate VSessionId for this tenant")
@@ -663,6 +680,8 @@ def main() -> int:
 
     settings = Settings.load()
     report: dict[str, Any]
+
+    log.info("UX 2.0 solution filter: %s", args.solution)
 
     with ManagerClient(settings) as client:
         client.login()

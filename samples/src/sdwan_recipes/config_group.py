@@ -20,6 +20,8 @@ from sdwan_recipes.client import ManagerClient, SdwanApiError
 from sdwan_recipes.util import device_rows, unwrap_data
 
 UX2_SOLUTIONS = ("sdwan", "sd-routing")
+# Primary customer workflow for config_group_onboard.py (SD-Routing config groups).
+DEFAULT_ONBOARD_SOLUTION = "sd-routing"
 
 
 def _as_group_list(payload: Any) -> list[dict[str, Any]]:
@@ -291,6 +293,87 @@ def inventory_serial(row: dict[str, Any]) -> str | None:
     return None
 
 
+def inventory_solution_hint(row: dict[str, Any]) -> str | None:
+    """
+    Best-effort UX 2.0 solution hint from an inventory row (validate in lab).
+
+    Uses explicit ``solution`` / ``deviceSolution`` fields when present. Does **not**
+    infer SD-WAN from ``personality: vedge`` alone — SD-Routing devices may share that
+    value on IOS-XE platforms.
+    """
+    for field in ("solution", "deviceSolution", "configSolution"):
+        val = row.get(field)
+        if val is None or str(val).strip() == "":
+            continue
+        s = str(val).strip().lower().replace("_", "-")
+        if s == "sd-routing" or "sd-routing" in s:
+            return "sd-routing"
+        if s == "sdwan":
+            return "sdwan"
+    for field in ("personality", "device-type"):
+        val = row.get(field)
+        if val is None or str(val).strip() == "":
+            continue
+        s = str(val).strip().lower().replace("_", "-")
+        if "sd-routing" in s or s in {"sdrouter", "sd-router", "sdrouting"}:
+            return "sd-routing"
+    return None
+
+
+def inventory_matches_solution(row: dict[str, Any], solution: str | None) -> bool:
+    """
+    Return True if an inventory row should be included for the given solution filter.
+
+    When ``solution`` is ``all`` or ``None``, every reachable row matches. When scoped to
+    ``sd-routing`` or ``sdwan``, rows with a **conflicting** hint are excluded; unknown
+    hints are kept (with ``solution_hint: null`` in discover output).
+    """
+    if not solution or solution == "all":
+        return True
+    hint = inventory_solution_hint(row)
+    if hint is None:
+        return True
+    return hint == solution
+
+
+def effective_group_solution(
+    group: dict[str, Any],
+    detail: dict[str, Any] | None,
+    *,
+    filter_solution: str | None = None,
+) -> str:
+    """
+    Resolve the ``solution`` value required for variables PUT and deploy validation.
+
+    Prefer explicit ``solution`` on group list/detail API responses. Fall back to the
+    CLI ``--solution`` filter when it is not ``all``, else ``DEFAULT_ONBOARD_SOLUTION``
+    (``sd-routing`` for the CSV onboard sample).
+    """
+    for src in (group, detail or {}):
+        raw = src.get("solution")
+        if raw is not None and str(raw).strip() in UX2_SOLUTIONS:
+            return str(raw).strip()
+    if filter_solution and filter_solution in UX2_SOLUTIONS:
+        return filter_solution
+    return DEFAULT_ONBOARD_SOLUTION
+
+
+def assert_group_solution_matches(
+    group_name: str,
+    group_solution: str,
+    *,
+    filter_solution: str | None,
+) -> None:
+    """Raise when ``--solution`` is scoped and does not match the resolved config group."""
+    if not filter_solution or filter_solution == "all":
+        return
+    if group_solution != filter_solution:
+        raise SdwanApiError(
+            f"Configuration group {group_name!r} has solution {group_solution!r}; "
+            f"expected {filter_solution!r} (check --solution or CSV config_group name)"
+        )
+
+
 def collect_all_associated_device_ids(
     client: ManagerClient,
     *,
@@ -324,19 +407,23 @@ def collect_all_associated_device_ids(
 def find_unassigned_reachable_devices(
     client: ManagerClient,
     *,
-    solution: str | None = "all",
+    solution: str | None = DEFAULT_ONBOARD_SOLUTION,
 ) -> list[dict[str, Any]]:
     """
     List reachable inventory devices not yet in any UX 2.0 config group.
 
     Algorithm:
     1. ``GET /dataservice/device`` — keep rows with ``reachability == "reachable"``.
-    2. ``collect_all_associated_device_ids`` — ids already in a config group.
-    3. Exclude device if association id or any ``inventory_device_keys`` entry is in that set.
+    2. Optionally filter out inventory rows whose solution hint conflicts with ``solution``.
+    3. ``collect_all_associated_device_ids`` — ids already in a config group (same solution scope).
+    4. Exclude device if association id or any ``inventory_device_keys`` entry is in that set.
+
+    Args:
+        solution: ``sd-routing`` (default for onboard), ``sdwan``, or ``all``. Scopes which
+            config groups are scanned for existing associations.
 
     Returns:
-        List of summary dicts (``association_id``, ``serial_number``, ``host-name``,
-        ``system-ip``, ``site-id``, ``device-model``, ``reachability``, ``uuid``).
+        List of summary dicts including ``solution_hint`` when detectable.
     """
     inventory = client.dataservice_json("/dataservice/device")
     associated = collect_all_associated_device_ids(client, solution=solution)
@@ -344,10 +431,13 @@ def find_unassigned_reachable_devices(
     for row in device_rows(inventory):
         if row.get("reachability") != "reachable":
             continue
+        if not inventory_matches_solution(row, solution):
+            continue
         keys = inventory_device_keys(row)
         assoc_id = inventory_association_id(row)
         if (assoc_id and assoc_id in associated) or (keys & associated):
             continue
+        hint = inventory_solution_hint(row)
         out.append(
             {
                 "association_id": assoc_id,
@@ -358,6 +448,7 @@ def find_unassigned_reachable_devices(
                 "device-model": row.get("device-model") or row.get("deviceModel"),
                 "reachability": row.get("reachability"),
                 "uuid": row.get("uuid"),
+                "solution_hint": hint,
             }
         )
     return out

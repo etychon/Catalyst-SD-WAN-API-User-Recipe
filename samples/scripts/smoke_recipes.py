@@ -127,6 +127,8 @@ def main() -> int:
                     py,
                     "scripts/config_group_onboard.py",
                     "--discover-unassigned",
+                    "--solution",
+                    "sd-routing",
                     "--output",
                     str(out_dir / "config_group_onboard_discover.json"),
                 ],

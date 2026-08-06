@@ -102,7 +102,7 @@ python scripts/collect_dashboard_snapshot.py --hours 24 --output output/dashboar
 | Device + interface inventory | [docs/recipes/inventory-devices.md](docs/recipes/inventory-devices.md) |
 | Config sync (legacy probe) | [docs/recipes/inventory-status-config-groups.md](docs/recipes/inventory-status-config-groups.md) |
 | UX 2.0 config groups (list, drift, deploy) | [docs/recipes/config-group-ux2-sync-deploy.md](docs/recipes/config-group-ux2-sync-deploy.md) |
-| UX 2.0 CSV onboard (associate, deploy, verify) | [docs/recipes/config-group-csv-onboard-deploy.md](docs/recipes/config-group-csv-onboard-deploy.md) · inline docs in `samples/scripts/config_group_onboard.py` |
+| UX 2.0 CSV onboard (SD-Routing default; associate, deploy, verify) | [docs/recipes/config-group-csv-onboard-deploy.md](docs/recipes/config-group-csv-onboard-deploy.md) · inline docs in `samples/scripts/config_group_onboard.py` |
 | Health and tunnels | [docs/recipes/health-cpu-mem-tunnels.md](docs/recipes/health-cpu-mem-tunnels.md) |
 | Topology and GPS | [docs/recipes/topology-location-gps.md](docs/recipes/topology-location-gps.md) |
 | Transport / underlay | [docs/recipes/transport-underlay-monitoring.md](docs/recipes/transport-underlay-monitoring.md) |

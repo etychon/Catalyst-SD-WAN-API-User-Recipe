@@ -1,7 +1,7 @@
 ---
 title: UX 2.0 config groups — CSV onboard, associate, deploy, verify
 release: "20.18"
-tags: [configuration-groups, ux2, onboard, csv, deploy, app-hosting]
+tags: [configuration-groups, ux2, onboard, csv, deploy, app-hosting, sd-routing]
 apis:
   - /dataservice/device
   - /dataservice/template/device/config/attached
@@ -28,6 +28,23 @@ This recipe extends [config-group-ux2-sync-deploy.md](config-group-ux2-sync-depl
 5. Verify deployment success and **Custom Application** installation (app-hosting parcel triggered by config-group deploy).
 
 **UX 2.0 only** (`sdwan` and `sd-routing`). Classic device templates are out of scope.
+
+### Primary use case: SD-Routing
+
+This workflow is written for **SD-Routing configuration groups** (`solution: sd-routing`). The sample script defaults to ``--solution sd-routing`` so list/associate/variables/deploy calls target SD-Routing groups only. Use ``--solution sdwan`` for SD-WAN-only labs, or ``--solution all`` when you intentionally manage both.
+
+Important behaviors for SD-Routing:
+
+| Topic | Behavior |
+|-------|----------|
+| Default CLI filter | ``--solution sd-routing`` (omit the flag in normal SD-Routing runs) |
+| Variables PUT body | ``"solution": "sd-routing"`` taken from the resolved config group (never assumed SD-WAN) |
+| Group name resolution | Exact name match within SD-Routing groups when default filter is active |
+| Mismatch guard | Fails if CSV ``config_group`` resolves to a group whose ``solution`` differs from ``--solution`` |
+| Discover output | Includes optional ``solution_hint`` per device when inventory exposes it |
+| CLI config groups | SD-Routing supports CLI configuration groups when feature parcels are unavailable — same associate/variables/deploy APIs |
+
+Validate field names and inventory ``solution`` hints against your Manager lab ([DevNet OpenAPI](https://developer.cisco.com/docs/sdwan/)).
 
 ## Outcome
 
@@ -68,7 +85,7 @@ Multi-tenant provider: activate `VSessionId` before config-group calls ([multite
 | Login | POST | `/jwt/login` | [Authentication](https://developer.cisco.com/docs/sdwan/authentication/) |
 | Inventory | GET | `/dataservice/device` | [Device](https://developer.cisco.com/docs/sdwan/device/) |
 | Template attach probe | GET | `/dataservice/template/device/config/attached` | Legacy; warn if device still template-attached |
-| List groups | GET | `/dataservice/v1/config-group?solution=` | [Get Config Group By Solution](https://developer.cisco.com/docs/sdwan/get-config-group-by-solution/) |
+| List groups | GET | `/dataservice/v1/config-group?solution=sd-routing` | [Get Config Group By Solution](https://developer.cisco.com/docs/sdwan/get-config-group-by-solution/) |
 | Group detail | GET | `/dataservice/v1/config-group/{configGroupId}` | [Get Config Group](https://developer.cisco.com/docs/sdwan/get-config-group/) |
 | List associated | GET | `/dataservice/v1/config-group/{configGroupId}/device/associate` | [Get Config Group Association](https://developer.cisco.com/docs/sdwan/get-config-group-association/) |
 | **Associate** | POST | `/dataservice/v1/config-group/{configGroupId}/device/associate` | [Create Config Group Association](https://developer.cisco.com/docs/sdwan/create-config-group-association/) |
@@ -88,40 +105,42 @@ Associate request body (illustrative):
 }
 ```
 
-Variables PUT body (illustrative):
+Variables PUT body (illustrative — **SD-Routing**):
 
 ```json
 {
-  "solution": "sdwan",
+  "solution": "sd-routing",
   "devices": [
     {
       "device-id": "C8K-bee4a662-2a65-4b45-872a-b501bc5a465d",
       "variables": [
-        { "name": "system_ip", "value": "10.1.1.10" },
-        { "name": "site_id", "value": 101 }
+        { "name": "system_ip", "value": "10.20.1.10" },
+        { "name": "site_id", "value": 201 }
       ]
     }
   ]
 }
 ```
 
+For SD-WAN groups, the same endpoint applies with ``"solution": "sdwan"``.
+
 Deploy returns `parentTaskId`; poll until task completes, then re-read association for `configGroupUpToDate`.
 
 ## Discover unassigned reachable devices
 
-There is **no** single “unassigned” inventory field. The sample builds the set of device IDs associated to **any** config group, then returns reachable inventory rows **not** in that set.
+There is **no** single “unassigned” inventory field. The sample builds the set of device IDs associated to **SD-Routing** config groups (default), then returns reachable inventory rows **not** in that set.
 
 ```bash
 cd samples
 python scripts/config_group_onboard.py --discover-unassigned --output output/unassigned.json
 ```
 
-Emit a CSV template (optionally pre-fill columns from a target group schema):
+``--solution sd-routing`` is the default and may be omitted. Emit a CSV template from an SD-Routing group schema:
 
 ```bash
 python scripts/config_group_onboard.py \
   --discover-unassigned \
-  --template-group CG_Lab_Site_A \
+  --template-group CG_SD_Routing_Lab \
   --output-csv output/onboard_template.csv \
   --output output/unassigned.json
 ```
@@ -133,7 +152,7 @@ Required columns:
 | Column | Description |
 |--------|-------------|
 | `serial_number` | Matches `board-serial` / chassis in `GET /device` |
-| `config_group` | Exact configuration group **name** (resolved to UUID) |
+| `config_group` | Exact **SD-Routing** configuration group **name** (resolved to UUID; must match ``--solution``) |
 
 Additional columns are **device variable names** for that group (e.g. `system_ip`, `site_id`, `host_name`). Header names must match variable `name` values from the schema GET.
 
@@ -174,7 +193,9 @@ python scripts/config_group_onboard.py \
   --output output/onboard_result.json
 ```
 
-Optional: `--skip-locked`, `--poll-timeout 900`, `--poll-interval 15`, `--tenant emmanuel`.
+Optional: `--skip-locked`, `--poll-timeout 900`, `--poll-interval 15`, `--tenant emmanuel`, `--solution sd-routing` (default).
+
+For SD-WAN-only onboarding, pass `--solution sdwan` explicitly.
 
 ## Verification
 
@@ -189,10 +210,9 @@ After deploy:
 - **403 / 404:** RBAC or UX 2.0 not enabled; record HTTP status per call.
 - **Still on classic template:** device may not appear in associate workflow; discovery sets `template_attached_warning` when serial appears in template attach list.
 - **`device-lock: Yes`:** use `--skip-locked` or handle manually.
+- **Wrong solution on group:** CSV references an SD-WAN group while default filter is SD-Routing — script fails with solution mismatch; align ``config_group`` name and ``--solution``.
 - **Field drift:** trust DevNet OpenAPI and live responses over this document.
 - **Multi-tenant:** list/associate/deploy in tenant context with `VSessionId`.
-
-## Sample
 
 Source: [samples/scripts/config_group_onboard.py](../../samples/scripts/config_group_onboard.py)
 
