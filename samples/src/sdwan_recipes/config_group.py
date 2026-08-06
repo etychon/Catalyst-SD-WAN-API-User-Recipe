@@ -1,4 +1,16 @@
-"""UX 2.0 configuration group helpers (Manager 20.18)."""
+"""
+UX 2.0 configuration group helpers (Cisco Catalyst SD-WAN Manager 20.18).
+
+Wraps ``/dataservice/v1/config-group`` REST APIs for ``sdwan`` and ``sd-routing`` solutions.
+Used by ``config_group_onboard.py`` and ``config_group_ux2.py`` recipe scripts.
+
+Key flows:
+- List groups, resolve by name, fetch detail and associations
+- Discover unassigned reachable devices (inventory minus all group associations)
+- Associate devices, GET/PUT device variables, deploy, verify sync state
+
+Classic device templates are not managed here; detach templates before association.
+"""
 
 from __future__ import annotations
 
@@ -142,7 +154,24 @@ def deploy_config_group(
     device_ids: list[str],
 ) -> dict[str, Any]:
     """
-    POST /dataservice/v1/config-group/{configGroupId}/device/deploy
+    Push configuration group to associated devices (async task).
+
+    ``POST /dataservice/v1/config-group/{configGroupId}/device/deploy``
+
+    Response typically includes ``parentTaskId`` for polling via
+    ``device_actions.poll_action_status``. Custom Application install, when configured
+    in the group, is triggered by this deploy—not by a separate install API in our samples.
+
+    Args:
+        client: Authenticated Manager client.
+        config_group_id: Group UUID.
+        device_ids: Subset of associated device ids to deploy.
+
+    Returns:
+        Response dict (often includes ``parentTaskId``); non-dict responses wrapped as ``{"raw": ...}``.
+
+    Raises:
+        SdwanApiError: Empty ``device_ids`` or HTTP/API error.
     """
     if not device_ids:
         raise SdwanApiError("deploy requires at least one device id")
@@ -177,7 +206,20 @@ def resolve_config_group_by_name(
     *,
     solution: str | None = "all",
 ) -> dict[str, Any]:
-    """Find a config group by exact name (case-sensitive)."""
+    """
+    Resolve a UX 2.0 configuration group by exact display name.
+
+    Args:
+        client: Authenticated Manager client.
+        name: Case-sensitive group name (Manager ``name`` field).
+        solution: ``sdwan``, ``sd-routing``, or ``all`` when searching.
+
+    Returns:
+        Single matching group dict (includes ``id``, ``name``, ``solution``).
+
+    Raises:
+        SdwanApiError: No match or ambiguous duplicate names across solutions.
+    """
     want = name.strip()
     matches = [g for g in list_config_groups(client, solution=solution) if str(g.get("name") or "") == want]
     if not matches:
@@ -212,8 +254,17 @@ def inventory_device_keys(row: dict[str, Any]) -> set[str]:
 
 def inventory_association_id(row: dict[str, Any]) -> str | None:
     """
-    Best device id for config-group associate/deploy APIs.
-    Prefer uuid/deviceId; fall back to other inventory keys.
+    Derive the device ``id`` used by config-group associate/deploy/variables APIs.
+
+    Preference order: ``uuid``, ``deviceId``, chassis/serial fields, then any key from
+    ``inventory_device_keys``. Manager expects this id in ``{"devices": [{"id": "..."}]}``
+    bodies—not necessarily the CSV serial number.
+
+    Args:
+        row: Single row from ``GET /dataservice/device``.
+
+    Returns:
+        Association id string, or ``None`` if no usable identifier found.
     """
     for field in ("uuid", "deviceId", "chasisNumber", "chassis-number", "board-serial"):
         val = row.get(field)
@@ -224,6 +275,15 @@ def inventory_association_id(row: dict[str, Any]) -> str | None:
 
 
 def inventory_serial(row: dict[str, Any]) -> str | None:
+    """
+    Extract hardware serial from an inventory row for CSV matching.
+
+    Checks ``board-serial``, ``serialNumber``, ``serial-number``, ``chasisNumber``,
+    ``chassis-number`` (Manager field names vary by platform).
+
+    Returns:
+        Serial string or ``None``.
+    """
     for field in ("board-serial", "serialNumber", "serial-number", "chasisNumber", "chassis-number"):
         val = row.get(field)
         if val is not None and str(val).strip():
@@ -236,7 +296,15 @@ def collect_all_associated_device_ids(
     *,
     solution: str | None = "all",
 ) -> set[str]:
-    """Union of device ids associated to any UX 2.0 config group."""
+    """
+    Build the set of device ids already associated to any UX 2.0 config group.
+
+    Enumerates all groups (optionally filtered by ``solution``), calls
+    ``GET .../device/associate`` per group, and unions ``id`` fields. Groups that
+    fail to list associations are skipped (logged only via exception swallow in caller).
+
+    Used by ``find_unassigned_reachable_devices`` to compute set difference against inventory.
+    """
     associated: set[str] = set()
     for group in list_config_groups(client, solution=solution):
         gid = str(group.get("id") or "")
@@ -259,7 +327,16 @@ def find_unassigned_reachable_devices(
     solution: str | None = "all",
 ) -> list[dict[str, Any]]:
     """
-    Reachable inventory devices not associated to any UX 2.0 config group.
+    List reachable inventory devices not yet in any UX 2.0 config group.
+
+    Algorithm:
+    1. ``GET /dataservice/device`` — keep rows with ``reachability == "reachable"``.
+    2. ``collect_all_associated_device_ids`` — ids already in a config group.
+    3. Exclude device if association id or any ``inventory_device_keys`` entry is in that set.
+
+    Returns:
+        List of summary dicts (``association_id``, ``serial_number``, ``host-name``,
+        ``system-ip``, ``site-id``, ``device-model``, ``reachability``, ``uuid``).
     """
     inventory = client.dataservice_json("/dataservice/device")
     associated = collect_all_associated_device_ids(client, solution=solution)
@@ -292,7 +369,20 @@ def associate_devices_to_group(
     device_ids: list[str],
 ) -> Any:
     """
-    POST /dataservice/v1/config-group/{configGroupId}/device/associate
+    Associate devices to a configuration group (membership only; does not deploy).
+
+    ``POST /dataservice/v1/config-group/{configGroupId}/device/associate``
+
+    Args:
+        client: Authenticated Manager client.
+        config_group_id: UX 2.0 group UUID from list/detail API.
+        device_ids: Manager device ids (see ``inventory_association_id``).
+
+    Returns:
+        Parsed JSON response body (shape varies).
+
+    Raises:
+        SdwanApiError: Empty ``device_ids`` or HTTP/API error from client.
     """
     if not device_ids:
         raise SdwanApiError("associate requires at least one device id")
@@ -339,8 +429,21 @@ def set_group_device_variables(
     devices: list[dict[str, Any]],
 ) -> Any:
     """
-    PUT /dataservice/v1/config-group/{configGroupId}/device/variables
-    devices: list of {"device-id": "...", "variables": [{"name": "...", "value": ...}, ...]}
+    Set per-device variable values before deploy.
+
+    ``PUT /dataservice/v1/config-group/{configGroupId}/device/variables``
+
+    Args:
+        client: Authenticated Manager client.
+        config_group_id: Group UUID.
+        solution: ``sdwan`` or ``sd-routing`` (required in request body).
+        devices: List of ``{"device-id": "<id>", "variables": [{"name": "...", "value": ...}, ...]}``.
+
+    Returns:
+        Parsed JSON response body.
+
+    Raises:
+        SdwanApiError: Empty ``devices`` or HTTP/API error.
     """
     if not devices:
         raise SdwanApiError("set_group_device_variables requires at least one device")
@@ -350,7 +453,19 @@ def set_group_device_variables(
 
 
 def schema_variable_names(schema: Any) -> list[str]:
-    """Extract variable names from variables schema payload (best-effort)."""
+    """
+    Extract device variable names from a variables schema response (best-effort).
+
+    Recursively walks nested dict/list JSON from
+    ``GET .../device/variables/schema`` and collects unique ``name`` string fields.
+    Order follows depth-first discovery; validate names against your group in lab.
+
+    Args:
+        schema: Raw JSON from ``get_group_variables_schema``.
+
+    Returns:
+        De-duplicated list of variable name strings (may be empty if schema shape differs).
+    """
     names: list[str] = []
     seen: set[str] = set()
 
@@ -372,7 +487,19 @@ def schema_variable_names(schema: Any) -> list[str]:
 
 
 def group_has_app_hosting_hint(group: dict[str, Any]) -> bool:
-    """Heuristic: config group may include Custom Application / app-hosting."""
+    """
+    Heuristic: group profile metadata suggests Custom Application / app-hosting.
+
+    Scans ``profiles[].name``, ``type``, and ``description`` for substrings such as
+    ``app-hosting``, ``custom application``, ``other`` (service profile). A False result
+    does not prove the group lacks app hosting—only that no hint was detected in metadata.
+
+    Args:
+        group: Config group detail dict from ``get_config_group_detail``.
+
+    Returns:
+        True if any hint substring matches.
+    """
     text_parts: list[str] = []
     for profile in group.get("profiles") or []:
         if not isinstance(profile, dict):
@@ -391,7 +518,22 @@ def verify_association_deployed(
     config_group_id: str,
     device_id: str,
 ) -> dict[str, Any]:
-    """Return association row and interpreted sync state for one device."""
+    """
+    Check post-deploy sync state for one device in a config group.
+
+    Reads ``GET .../device/associate`` and finds the row matching ``device_id``.
+    ``deployed_ok`` is True when ``configGroupUpToDate`` is True or ``configStatusMessage``
+    contains ``success`` without ``fail``.
+
+    Args:
+        client: Authenticated Manager client.
+        config_group_id: Group UUID.
+        device_id: Device id used in associate/deploy APIs.
+
+    Returns:
+        Dict with ``device_id``, ``configGroupUpToDate``, ``configStatusMessage``,
+        ``device-lock``, ``unsupportedFeatures``, ``deployed_ok``; or ``error`` if not found.
+    """
     for row in get_group_associations(client, config_group_id):
         if str(row.get("id") or "") == device_id:
             up = is_config_group_up_to_date(row)

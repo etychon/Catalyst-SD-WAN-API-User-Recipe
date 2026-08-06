@@ -1,10 +1,63 @@
 #!/usr/bin/env python3
 """
-Onboard reachable devices to UX 2.0 config groups from CSV: associate, variables, deploy, verify.
+UX 2.0 configuration group CSV onboarding CLI (Cisco Catalyst SD-WAN Manager 20.18).
 
-See docs/recipes/config-group-csv-onboard-deploy.md
+Automates discovery, association, device-variable provisioning, deploy, and post-deploy
+verification for ``sdwan`` and ``sd-routing`` configuration groups. Classic device
+templates are out of scope.
 
-Default: read-only. Writes require --apply --confirm-apply; deploy requires --deploy --confirm-deploy.
+Operator workflow
+-----------------
+1. **Discover** reachable devices not yet assigned to any UX 2.0 config group::
+
+       python scripts/config_group_onboard.py --discover-unassigned --output output/unassigned.json
+
+2. **Generate a CSV template** (optional variable columns from a named group)::
+
+       python scripts/config_group_onboard.py \\
+         --discover-unassigned --template-group MY_GROUP --output-csv output/onboard.csv
+
+3. **Validate** CSV rows against live inventory (no Manager writes)::
+
+       python scripts/config_group_onboard.py --csv output/onboard.csv --dry-run
+
+4. **Apply and deploy** (requires explicit confirmation flags)::
+
+       python scripts/config_group_onboard.py \\
+         --csv output/onboard.csv --apply --confirm-apply --deploy --confirm-deploy
+
+Safety defaults
+---------------
+- Read-only unless ``--apply --confirm-apply`` is passed (associate + variables PUT).
+- Deploy POST runs only with ``--deploy --confirm-deploy`` (and requires ``--apply``).
+- Credentials load from ``samples/.env`` via ``Settings``; never log tokens or passwords.
+
+CSV contract
+------------
+Required columns: ``serial_number``, ``config_group``. Additional columns are treated as
+device variables (names should match the group's variables schema). Empty variable cells
+are omitted from the PUT payload. Values are coerced: booleans, numbers, JSON literals,
+or strings (see ``_coerce_value``).
+
+Custom Application / app-hosting
+--------------------------------
+This script does **not** call a separate software-install API. Custom Application install
+is expected to occur as part of config-group deploy when the group includes an
+app-hosting profile. Verification uses deploy task polling plus association sync fields.
+
+Exit codes
+----------
+- ``0`` — success (all rows ``ok`` when ``results`` present)
+- ``1`` — one or more CSV rows failed validation or a write/deploy step
+- ``2`` — usage error (missing mode, confirmation flags, etc.)
+
+JSON report
+-----------
+Stdout or ``--output`` file. Modes: ``discover-unassigned``, ``csv-dry-run``, ``csv-apply``.
+Each CSV row gets a ``results[]`` entry with ``stage`` progressing through
+``validate`` → ``associate`` → ``variables`` → ``deploy`` and optional ``verification``.
+
+See also: ``docs/recipes/config-group-csv-onboard-deploy.md``
 """
 
 from __future__ import annotations
@@ -47,10 +100,24 @@ from sdwan_recipes.util import device_rows, unwrap_data
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("config_group_onboard")
 
+# CSV columns reserved for routing metadata; all other header names become device variables.
 FIXED_CSV_COLUMNS = frozenset({"serial_number", "config_group"})
 
 
 def _build_serial_index(client: ManagerClient) -> dict[str, dict[str, Any]]:
+    """
+    Build a case-insensitive lookup from serial / chassis identifiers to inventory rows.
+
+    Uses ``GET /dataservice/device``. Each device's ``board-serial`` (and related fields)
+    maps to its row; longer alternate keys (uuid, system-ip, etc.) are indexed when
+    at least six characters so operators can match CSV serials flexibly.
+
+    Args:
+        client: Authenticated Manager client.
+
+    Returns:
+        Dict keyed by lowercased identifier string → full inventory row dict.
+    """
     payload = client.dataservice_json("/dataservice/device")
     index: dict[str, dict[str, Any]] = {}
     for row in device_rows(payload):
@@ -64,6 +131,21 @@ def _build_serial_index(client: ManagerClient) -> dict[str, dict[str, Any]]:
 
 
 def _coerce_value(raw: str) -> Any:
+    """
+    Parse a CSV cell into a JSON-friendly Python value for variable PUT bodies.
+
+    Rules (applied in order):
+    - Whitespace-only → empty string ``""`` (caller may skip empty variable columns).
+    - ``true``/``yes``/``false``/``no`` (case-insensitive) → bool.
+    - Leading ``[`` or ``{`` → ``json.loads``; on failure, keep original string.
+    - Integer if no ``.``; else float; on ``ValueError``, keep string.
+
+    Args:
+        raw: Raw cell text from CSV (may be empty).
+
+    Returns:
+        Coerced value suitable for ``variables[].value`` in the Manager API.
+    """
     s = raw.strip()
     if not s:
         return ""
@@ -86,6 +168,21 @@ def _coerce_value(raw: str) -> Any:
 
 
 def _load_csv(path: Path) -> list[dict[str, str]]:
+    """
+    Read and validate the onboarding CSV file.
+
+    Requires header columns ``serial_number`` and ``config_group``. Skips blank data rows.
+    Strips whitespace from headers and cell values.
+
+    Args:
+        path: Path to UTF-8 CSV file.
+
+    Returns:
+        List of row dicts (string values) in file order.
+
+    Raises:
+        SdwanApiError: Missing header, required columns, or empty required fields (includes line number).
+    """
     with path.open(newline="", encoding="utf-8") as fh:
         reader = csv.DictReader(fh)
         if not reader.fieldnames:
@@ -107,10 +204,31 @@ def _load_csv(path: Path) -> list[dict[str, str]]:
 
 
 def _variable_columns(fieldnames: list[str]) -> list[str]:
+    """
+    Return CSV header names that represent device variables (not fixed routing columns).
+
+    Args:
+        fieldnames: Raw ``DictReader.fieldnames`` list.
+
+    Returns:
+        Ordered list of variable column names (preserves CSV column order).
+    """
     return [f for f in fieldnames if f and f.strip() not in FIXED_CSV_COLUMNS]
 
 
 def _row_to_device_payload(row: dict[str, str], var_cols: list[str]) -> dict[str, Any]:
+    """
+    Convert one CSV row into an internal structure for grouping and API calls.
+
+    Non-empty variable columns become ``{"name", "value"}`` entries with coerced values.
+
+    Args:
+        row: Cleaned CSV row dict.
+        var_cols: Variable column names from ``_variable_columns``.
+
+    Returns:
+        Dict with ``serial_number``, ``config_group``, and ``variables`` list.
+    """
     variables = [{"name": col, "value": _coerce_value(row.get(col, ""))} for col in var_cols if row.get(col, "")]
     return {
         "serial_number": row["serial_number"],
@@ -120,6 +238,21 @@ def _row_to_device_payload(row: dict[str, str], var_cols: list[str]) -> dict[str
 
 
 def _template_attached_serials(client: ManagerClient) -> set[str]:
+    """
+    Collect serial numbers still attached to classic device templates.
+
+    Used during discover to flag ``template_attached_warning`` on each device. Devices
+    must typically be detached from classic templates before UX 2.0 config-group association.
+
+    Calls ``GET /dataservice/template/device/config/attached``. Failures return an empty set
+    (non-fatal; discovery still proceeds).
+
+    Args:
+        client: Authenticated Manager client.
+
+    Returns:
+        Lowercased serial strings found in the attached-template response.
+    """
     attached: set[str] = set()
     r = client.request("GET", "/dataservice/template/device/config/attached")
     if not r.is_success:
@@ -150,6 +283,29 @@ def run_discover(
     output_csv: Path | None,
     template_group: str | None,
 ) -> dict[str, Any]:
+    """
+    Discover reachable inventory devices not assigned to any UX 2.0 config group.
+
+    Optionally writes a CSV template with ``serial_number``, ``config_group``, and variable
+    columns derived from ``--template-group`` schema (``GET .../device/variables/schema``).
+
+    Args:
+        client: Authenticated Manager client.
+        solution: ``sdwan``, ``sd-routing``, or ``all`` (filters config-group enumeration).
+        output_csv: If set, write CSV template to this path (creates parent dirs).
+        template_group: Config group name to pre-fill in CSV and supply variable column headers.
+
+    Returns:
+        JSON-serializable report::
+
+            {
+              "mode": "discover-unassigned",
+              "solution_filter": "...",
+              "count": N,
+              "devices": [ { association_id, serial_number, ... , template_attached_warning }, ... ],
+              "template_config_group": { ... }  # only when template_group set
+            }
+    """
     devices = find_unassigned_reachable_devices(client, solution=solution)
     template_serials = _template_attached_serials(client)
     for d in devices:
@@ -195,6 +351,17 @@ def _resolve_row_device(
     row: dict[str, str],
     serial_index: dict[str, dict[str, Any]],
 ) -> tuple[str | None, dict[str, Any] | None, str | None]:
+    """
+    Map a CSV ``serial_number`` to Manager association id and inventory row.
+
+    Args:
+        row: CSV row with ``serial_number``.
+        serial_index: Output of ``_build_serial_index``.
+
+    Returns:
+        Tuple ``(association_id, inventory_row, error_message)``. On success ``error_message``
+        is ``None``; on failure ``association_id`` and possibly ``inventory_row`` are ``None``.
+    """
     serial = row["serial_number"].strip()
     inv = serial_index.get(serial.lower())
     if not inv:
@@ -217,6 +384,35 @@ def run_csv(
     poll_timeout: float,
     poll_interval: float,
 ) -> dict[str, Any]:
+    """
+    Process an onboarding CSV: validate, optionally associate, set variables, deploy, verify.
+
+    Pipeline stages per config group (when ``apply`` is True):
+
+    1. **Validate** — serial → inventory, reachability, resolve group by name, load schema.
+    2. **Associate** — ``POST .../device/associate`` with device ids for that group.
+    3. **Variables** — ``PUT .../device/variables`` with per-device variable lists.
+    4. **Deploy** (if ``deploy``) — ``POST .../device/deploy``, poll ``parentTaskId`` via
+       ``GET /device/action/status/{processId}``, then ``verify_association_deployed`` per device.
+
+    Rows are grouped by ``config_group`` column so each group triggers one associate/variables/deploy
+    batch. Failures on one group do not stop processing of other groups.
+
+    Args:
+        client: Authenticated Manager client.
+        csv_path: Input CSV path.
+        solution: Filter when resolving group names (``sdwan``, ``sd-routing``, ``all``).
+        dry_run: If True (or ``apply`` False), stop after validation; no mutating API calls.
+        apply: When True with ``confirm-apply`` (checked in ``main``), run associate + variables.
+        deploy: When True with ``confirm-deploy``, run deploy + poll + verification after variables.
+        skip_locked: Skip devices whose association row has ``device-lock: Yes`` before associate.
+        poll_timeout: Max seconds to poll deploy task status.
+        poll_interval: Seconds between poll attempts.
+
+    Returns:
+        Report dict with ``mode`` ``csv-dry-run`` or ``csv-apply``, ``groups`` metadata,
+        ``results`` per row, and ``deploy_tasks`` when deploy ran.
+    """
     rows = _load_csv(csv_path)
     with csv_path.open(newline="", encoding="utf-8") as fh:
         reader = csv.DictReader(fh)
@@ -228,6 +424,7 @@ def run_csv(
     by_group: dict[str, list[dict[str, Any]]] = defaultdict(list)
     results: list[dict[str, Any]] = []
 
+    # --- Phase 1: per-row validation and grouping ---
     for raw_row, item in zip(rows, parsed, strict=True):
         assoc_id, inv, err = _resolve_row_device(raw_row, serial_index)
         entry: dict[str, Any] = {
@@ -256,6 +453,7 @@ def run_csv(
         )
         results.append(entry)
 
+    # --- Phase 2: resolve each config group and load variable schema ---
     group_meta: dict[str, dict[str, Any]] = {}
     for group_name in list(by_group.keys()):
         try:
@@ -293,6 +491,7 @@ def run_csv(
 
     deploy_tasks: list[dict[str, Any]] = []
 
+    # --- Phase 3: mutating API calls per config group ---
     for group_name, members in by_group.items():
         meta = group_meta[group_name]
         gid = meta["id"]
@@ -400,6 +599,16 @@ def run_csv(
 
 
 def main() -> int:
+    """
+    CLI entry point: parse args, authenticate, run discover or CSV workflow, emit JSON report.
+
+    Confirmation guardrails (exit 2 if violated):
+    - ``--apply`` requires ``--confirm-apply``
+    - ``--deploy`` requires ``--confirm-deploy`` and ``--apply``
+
+    Returns:
+        Exit code 0, 1, or 2 (see module docstring).
+    """
     p = argparse.ArgumentParser(
         description="UX 2.0 config group CSV onboard: discover, associate, variables, deploy, verify"
     )

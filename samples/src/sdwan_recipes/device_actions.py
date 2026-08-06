@@ -1,4 +1,11 @@
-"""Device action task status helpers (deploy, install, template push)."""
+"""
+Poll asynchronous Manager device actions (deploy, install, template push).
+
+Used after config-group deploy returns ``parentTaskId``. Calls
+``GET /dataservice/device/action/status/{processId}`` until a terminal status
+or timeout. Response JSON shapes vary by Manager version; ``_task_complete`` uses
+best-effort heuristics—validate against your lab before production reliance.
+"""
 
 from __future__ import annotations
 
@@ -40,8 +47,15 @@ def _normalize_status(value: Any) -> str:
 
 def _task_complete(payload: Any) -> tuple[bool, bool, str]:
     """
-    Return (finished, success, summary_message).
-    Handles common Manager task response shapes (validate in lab).
+    Interpret a device-action status payload as finished/success/summary.
+
+    Supports list-of-per-device-status dicts, top-level ``status``/``state``/``activity``,
+    nested ``data`` arrays (via ``unwrap_data``), and string ``summary``/``message`` fields.
+    Terminal success tokens include ``success``, ``done``, ``complete``, ``completed``.
+    Terminal failure tokens include ``failure``, ``failed``, ``error``, ``cancelled``.
+
+    Returns:
+        ``(finished, success, summary_message)`` — when ``finished`` is False, poll again.
     """
     if isinstance(payload, list):
         if not payload:
@@ -88,7 +102,17 @@ def poll_action_status(
     interval_sec: float = 15.0,
 ) -> dict[str, Any]:
     """
-    Poll GET /dataservice/device/action/status/{processId} until complete or timeout.
+    Poll ``GET /dataservice/device/action/status/{processId}`` until complete or timeout.
+
+    Args:
+        client: Authenticated Manager client.
+        process_id: ``parentTaskId`` (or equivalent) from deploy POST response.
+        timeout_sec: Maximum wall time to poll (monotonic clock).
+        interval_sec: Sleep between polls when task still running.
+
+    Returns:
+        Dict with ``process_id``, ``finished``, ``success``, ``summary``, ``attempts``,
+        and ``last_status`` (raw last JSON payload for troubleshooting).
     """
     deadline = time.monotonic() + timeout_sec
     last_payload: Any = {}

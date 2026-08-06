@@ -198,6 +198,8 @@ Source: [samples/scripts/config_group_onboard.py](../../samples/scripts/config_g
 
 Shared library: `sdwan_recipes.config_group`, `sdwan_recipes.device_actions`.
 
+**Inline code documentation:** module and function docstrings in [samples/scripts/config_group_onboard.py](../../samples/scripts/config_group_onboard.py), [config_group.py](../../samples/src/sdwan_recipes/config_group.py), and [device_actions.py](../../samples/src/sdwan_recipes/device_actions.py) — workflow, CLI, CSV contract, API mapping, JSON report shape, exit codes.
+
 ---
 
 ## In plain language
@@ -212,6 +214,7 @@ Answers: **Which reachable devices are not in a config group yet?** **How do I b
 
 ## Technical details
 
+- Inline docs in `config_group_onboard.py`, `sdwan_recipes/config_group.py`, `device_actions.py`
 - [API selection — CSV onboard row](../api-selection-guide.md)
 - [API index — DevNet links](../reference/api-index.md)
 - [DevNet — Create Config Group Association](https://developer.cisco.com/docs/sdwan/create-config-group-association/)

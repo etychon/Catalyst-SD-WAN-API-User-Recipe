@@ -379,7 +379,19 @@ class ManagerClient:
         return self._dataservice_mutate_json("POST", path, json_body=json_body)
 
     def dataservice_put_json(self, path: str, *, json_body: Any) -> Any:
-        """PUT to /dataservice/... Short paths get /dataservice prefixed."""
+        """
+        PUT JSON to a Manager dataservice path (used for config-group device variables).
+
+        Short paths are prefixed with ``/dataservice``. Retries once on SessionTokenFilter
+        403 when using Bearer JWT (same behavior as ``dataservice_post_json``).
+
+        Args:
+            path: API path, e.g. ``/dataservice/v1/config-group/{id}/device/variables``.
+            json_body: Serializable dict/list for JSON request body.
+
+        Returns:
+            Parsed JSON response or raw text coerced by ``_parse_json_response``.
+        """
         return self._dataservice_mutate_json("PUT", path, json_body=json_body)
 
     def log_json_sample(self, label: str, data: Any) -> None:

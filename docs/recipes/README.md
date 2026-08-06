@@ -15,7 +15,7 @@ Version: **20.18** ([DevNet](https://developer.cisco.com/docs/sdwan/)).
 | Know if devices are reachable | [inventory-devices.md](inventory-devices.md) (reachability fields) |
 | Check config sync (legacy / templates) | [inventory-status-config-groups.md](inventory-status-config-groups.md) |
 | List UX 2.0 config groups, find drift, deploy | [config-group-ux2-sync-deploy.md](config-group-ux2-sync-deploy.md) |
-| Onboard reachable devices to config groups from CSV | [config-group-csv-onboard-deploy.md](config-group-csv-onboard-deploy.md) |
+| Onboard reachable devices to config groups from CSV | [config-group-csv-onboard-deploy.md](config-group-csv-onboard-deploy.md) · inline docs in `samples/scripts/config_group_onboard.py` |
 | Monitor CPU, memory, and tunnels | [health-cpu-mem-tunnels.md](health-cpu-mem-tunnels.md) |
 | Put sites on a map (GPS / coordinates) | [topology-location-gps.md](topology-location-gps.md) |
 | Monitor WAN / underlay links | [transport-underlay-monitoring.md](transport-underlay-monitoring.md) |
