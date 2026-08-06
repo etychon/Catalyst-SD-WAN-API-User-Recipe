@@ -8,12 +8,12 @@ You do **not** need API or programming experience to benefit from most of this c
 
 This repository helps teams answer everyday SD-WAN operations questions **without starting from raw API documentation**:
 
-- **Inventory** — What devices exist? Which sites? Which WAN or cellular links?
-- **Health** — What is reachable, degraded, or using too much CPU or memory?
-- **Transport and tunnels** — Are underlay links and overlay tunnels healthy?
-- **Alarms and audit** — What needs attention right now? Who changed what?
-- **Configuration drift** — Which devices are out of sync with their configuration group?
-- **Maps and location** — Where are sites on a map? How do you keep history beyond Manager retention?
+- **[Inventory](recipes/inventory-devices.md)** — What devices exist? Which sites? Which WAN or cellular links? See also [transport / underlay](recipes/transport-underlay-monitoring.md) and [cellular signal](recipes/cellular-signal-thresholds.md).
+- **[Health](recipes/health-cpu-mem-tunnels.md)** — What is reachable, degraded, or using too much CPU or memory?
+- **[Transport and tunnels](recipes/transport-underlay-monitoring.md)** — Are underlay links and overlay tunnels healthy? Overlay tunnel metrics are also covered in the [health recipe](recipes/health-cpu-mem-tunnels.md).
+- **[Alarms and audit](recipes/syslog-alarms-audit-rbac.md)** — What needs attention right now? Who changed what?
+- **[Configuration drift](recipes/config-group-ux2-sync-deploy.md)** — Which devices are out of sync with their configuration group? For bulk onboard from CSV (SD-Routing default), see [config group CSV onboard](recipes/config-group-csv-onboard-deploy.md).
+- **[Maps and location](recipes/topology-location-gps.md)** — Where are sites on a map? How do you keep history beyond Manager retention? See [location history](recipes/location-history-retention.md).
 
 Each answer is packaged as a **recipe** (a short workflow document). Optional **Python samples** let you try the same workflow in a lab.
 
