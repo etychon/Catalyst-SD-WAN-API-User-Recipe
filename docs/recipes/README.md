@@ -15,6 +15,7 @@ Version: **20.18** ([DevNet](https://developer.cisco.com/docs/sdwan/)).
 | Know if devices are reachable | [inventory-devices.md](inventory-devices.md) (reachability fields) |
 | Check config sync (legacy / templates) | [inventory-status-config-groups.md](inventory-status-config-groups.md) |
 | List UX 2.0 config groups, find drift, deploy | [config-group-ux2-sync-deploy.md](config-group-ux2-sync-deploy.md) |
+| Onboard reachable devices to config groups from CSV | [config-group-csv-onboard-deploy.md](config-group-csv-onboard-deploy.md) |
 | Monitor CPU, memory, and tunnels | [health-cpu-mem-tunnels.md](health-cpu-mem-tunnels.md) |
 | Put sites on a map (GPS / coordinates) | [topology-location-gps.md](topology-location-gps.md) |
 | Monitor WAN / underlay links | [transport-underlay-monitoring.md](transport-underlay-monitoring.md) |
@@ -32,6 +33,7 @@ Version: **20.18** ([DevNet](https://developer.cisco.com/docs/sdwan/)).
 | [inventory-devices.md](inventory-devices.md) | Devices, interfaces, IPs |
 | [inventory-status-config-groups.md](inventory-status-config-groups.md) | Legacy sync probe (templates / mixed) |
 | [config-group-ux2-sync-deploy.md](config-group-ux2-sync-deploy.md) | UX 2.0 config groups: list, drift, deploy |
+| [config-group-csv-onboard-deploy.md](config-group-csv-onboard-deploy.md) | CSV onboard: discover, associate, variables, deploy, verify |
 | [health-cpu-mem-tunnels.md](health-cpu-mem-tunnels.md) | Health and tunnel stats |
 | [topology-location-gps.md](topology-location-gps.md) | Sites and coordinates |
 | [transport-underlay-monitoring.md](transport-underlay-monitoring.md) | WAN / underlay |

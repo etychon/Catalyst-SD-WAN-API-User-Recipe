@@ -18,7 +18,6 @@ When you complete an item, open a PR that updates this file (move to **Done** or
 
 | Item | Description |
 |------|-------------|
-| Deploy job status | After `POST /v1/config-group/{id}/device/deploy`, document and sample polling using `parentTaskId`; report per-device success/failure in CLI output. |
 | Safer deploy filters | Flags such as `--skip-unreachable`, `--skip-locked`, `--require-reachable` so deploy does not target edges that cannot apply configuration. |
 | Drift signal guide | Document when `configStatusMessage` is “In Sync” but `configGroupUpToDate` is `False`; optional golden-sample table per Manager patch. |
 
@@ -76,6 +75,8 @@ When you complete an item, open a PR that updates this file (move to **Done** or
 
 | Item | Notes |
 |------|--------|
+| UX 2.0 CSV onboard (discover, associate, variables, deploy, verify) | [config-group-csv-onboard-deploy.md](recipes/config-group-csv-onboard-deploy.md), `config_group_onboard.py`, `device_actions.py` task poll. |
+| Deploy job status (config group) | `poll_action_status()` on `parentTaskId` via `GET /device/action/status/{processId}` in CSV onboard script. |
 | Governance recipe (alarms, events, audit, RBAC) | [syslog-alarms-audit-rbac.md](recipes/syslog-alarms-audit-rbac.md) — API catalog, query DSL, filters; `alarms_events.py` + `governance_query.py`. |
 | UX 2.0 config groups recipe + script | [config-group-ux2-sync-deploy.md](recipes/config-group-ux2-sync-deploy.md), `config_group_ux2.py` (commit `bae8d45`). |
 | Multi-tenant provider JWT + `SDWAN_TENANT_NAME` | `activate_tenant_context()`, XSRF on GET with `VSessionId`. |

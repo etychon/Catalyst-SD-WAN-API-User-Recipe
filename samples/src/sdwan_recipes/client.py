@@ -337,17 +337,21 @@ class ManagerClient:
             logger.warning("Non-JSON response for %s: %s", path, r.text[:200])
             raise
 
-    def dataservice_post_json(self, path: str, *, json_body: Any) -> Any:
-        """POST to /dataservice/... Short paths get /dataservice prefixed."""
+    def _normalize_dataservice_path(self, path: str) -> str:
         p = path
         if not p.startswith("/dataservice"):
             p = "/dataservice" + (p if p.startswith("/") else "/" + p)
-        r = self.request("POST", p, json_body=json_body)
+        return p
+
+    def _dataservice_mutate_json(self, method: str, path: str, *, json_body: Any) -> Any:
+        """POST or PUT to /dataservice/... with SessionTokenFilter retry."""
+        p = self._normalize_dataservice_path(path)
+        r = self.request(method, p, json_body=json_body)
         if r.status_code == httpx.codes.FORBIDDEN and self._jwt_token and "SessionTokenFilter" in (r.text or ""):
             if not self._csrf:
                 self._bootstrap_csrf_for_bearer()
                 if self._csrf:
-                    r = self.request("POST", p, json_body=json_body)
+                    r = self.request(method, p, json_body=json_body)
             if (
                 r.status_code == httpx.codes.FORBIDDEN
                 and self._jwt_token
@@ -355,10 +359,11 @@ class ManagerClient:
                 and self._csrf
             ):
                 logger.info(
-                    "POST %s returned SessionTokenFilter 403 with X-XSRF-TOKEN; retrying without X-XSRF-TOKEN",
+                    "%s %s returned SessionTokenFilter 403 with X-XSRF-TOKEN; retrying without X-XSRF-TOKEN",
+                    method,
                     p,
                 )
-                r = self.request("POST", p, json_body=json_body, omit_xsrf=True)
+                r = self.request(method, p, json_body=json_body, omit_xsrf=True)
         if r.status_code >= 400:
             raise SdwanApiError(f"{p} failed HTTP {r.status_code}: {r.text[:400]}")
         text = (r.text or "").strip()
@@ -368,6 +373,14 @@ class ManagerClient:
             return r.json()
         except json.JSONDecodeError as exc:
             raise SdwanApiError(f"{p} did not return JSON") from exc
+
+    def dataservice_post_json(self, path: str, *, json_body: Any) -> Any:
+        """POST to /dataservice/... Short paths get /dataservice prefixed."""
+        return self._dataservice_mutate_json("POST", path, json_body=json_body)
+
+    def dataservice_put_json(self, path: str, *, json_body: Any) -> Any:
+        """PUT to /dataservice/... Short paths get /dataservice prefixed."""
+        return self._dataservice_mutate_json("PUT", path, json_body=json_body)
 
     def log_json_sample(self, label: str, data: Any) -> None:
         """Safe debug logging (redacted, truncated)."""

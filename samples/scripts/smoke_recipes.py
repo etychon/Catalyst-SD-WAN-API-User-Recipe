@@ -81,6 +81,11 @@ def main() -> int:
         action="store_true",
         help="Skip config_group_ux2.py (e.g. if Config Group-read RBAC is missing)",
     )
+    p.add_argument(
+        "--skip-config-group-onboard",
+        action="store_true",
+        help="Skip config_group_onboard.py discover step",
+    )
     args = p.parse_args()
 
     repo = args.samples_repo.resolve()
@@ -113,6 +118,22 @@ def main() -> int:
         )
     else:
         print("SKIP config_group_ux2 (--skip-config-group-ux2)")
+
+    if not args.skip_config_group_onboard:
+        steps.append(
+            (
+                "config_group_onboard",
+                [
+                    py,
+                    "scripts/config_group_onboard.py",
+                    "--discover-unassigned",
+                    "--output",
+                    str(out_dir / "config_group_onboard_discover.json"),
+                ],
+            )
+        )
+    else:
+        print("SKIP config_group_onboard (--skip-config-group-onboard)")
 
     steps.extend(
         [

@@ -1,0 +1,3 @@
+serial_number,config_group,system_ip,site_id,host_name,ipv6_strict_control,pseudo_commit_timer
+SYNTH-SN-00101,CG_Lab_Site_A,10.1.1.10,101,edge-lab-01,false,300
+SYNTH-SN-00102,CG_Lab_Site_A,10.1.1.11,102,edge-lab-02,false,300
