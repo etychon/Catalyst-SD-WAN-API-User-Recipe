@@ -25,7 +25,9 @@ This recipe extends [config-group-ux2-sync-deploy.md](config-group-ux2-sync-depl
 2. Discover **reachable** devices **not yet assigned** to any UX 2.0 configuration group.
 3. Associate devices to a named configuration group and set **device variables** from a **CSV** file.
 4. **Deploy** the configuration group and **poll** the asynchronous task.
-5. Verify deployment success and **Custom Application** installation (app-hosting parcel triggered by config-group deploy).
+5. Verify deployment success (config group sync via task poll and associate status).
+
+**Custom Application / IOx apps:** deploy is still part of this workflow (app-hosting parcel in the config group). After deploy, monitor IOx health with [hosted-edge-services-iox.md](hosted-edge-services-iox.md) — not duplicated here.
 
 **UX 2.0 only** (`sdwan` and `sd-routing`). Classic device templates are out of scope.
 
@@ -54,7 +56,7 @@ Operators can generate a CSV template from live inventory, fill device-specific 
 
 - Cisco Catalyst SD-WAN Manager **20.18.x** with UX 2.0 configuration groups.
 - Devices **detached from classic device templates** before association ([DevNet Feature Use Cases](https://developer.cisco.com/docs/sdwan/feature-use-cases/)).
-- Target configuration group includes required profiles; for **Custom Application / app-hosting**, the group should contain the relevant service/other profile (first deploy triggers app install per [Cisco integration guide](https://www.cisco.com/c/en/us/td/docs/routers/sdwan/configuration/integrations/cisco-catalyst-sd-wan-integrations/third-party-app.html)).
+- Target configuration group includes required profiles. For **Custom Application / app-hosting**, include the relevant parcel in the group (first deploy triggers install per [Cisco integration guide](https://www.cisco.com/c/en/us/td/docs/routers/sdwan/configuration/integrations/cisco-catalyst-sd-wan-integrations/third-party-app.html)). **Monitor** deployed IOx apps with [hosted-edge-services-iox.md](hosted-edge-services-iox.md).
 - Python **3.10+**, venv, `pip install -e .` under `samples/` (see [START-HERE](../START-HERE.md#5-minute-lab-try)).
 
 ### Authentication
@@ -203,7 +205,7 @@ After deploy:
 
 1. Poll `GET /dataservice/device/action/status/{parentTaskId}` until finished or timeout.
 2. `GET .../device/associate` — expect `configGroupUpToDate` true and success-oriented `configStatusMessage`.
-3. For Custom Application parcels, success is reported in the deploy task / device logs in Manager UI; the script flags groups without an app-hosting profile **hint** (heuristic on profile names/types — validate in lab).
+3. For app-hosting parcels, confirm deploy task success in Manager UI; the script flags groups without an app-hosting profile **hint** (heuristic — validate in lab). Then run [hosted-edge-services-iox.md](hosted-edge-services-iox.md) for IOx health statistics.
 
 ## Edge cases
 
@@ -224,11 +226,12 @@ Shared library: `sdwan_recipes.config_group`, `sdwan_recipes.device_actions`.
 
 ## In plain language
 
-Answers: **Which reachable devices are not in a config group yet?** **How do I bulk-assign them with per-device settings from a spreadsheet?** **How do I deploy and confirm the push (including Custom Application) succeeded?** Read-only by default; writes need explicit confirmation flags.
+Answers: **Which reachable devices are not in a config group yet?** **How do I bulk-assign them with per-device settings from a spreadsheet?** **How do I deploy and confirm the config group push succeeded?** Read-only by default; writes need explicit confirmation flags. For IOx monitoring after deploy, see [hosted-edge-services-iox.md](hosted-edge-services-iox.md).
 
 ## Where to go next
 
 - [UX 2.0 drift and deploy](config-group-ux2-sync-deploy.md)
+- [Hosted Edge Services (IOx) monitoring](hosted-edge-services-iox.md)
 - [Security — RBAC and deploy gates](../security-rbac-secrets.md)
 - [Multi-tenant connectivity](multitenant-connectivity.md)
 

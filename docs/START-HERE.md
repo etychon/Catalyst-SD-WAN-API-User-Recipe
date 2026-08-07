@@ -14,6 +14,7 @@ This repository helps teams answer everyday SD-WAN operations questions **withou
 - **[Alarms and audit](recipes/syslog-alarms-audit-rbac.md)** — What needs attention right now? Who changed what?
 - **[Configuration drift](recipes/config-group-ux2-sync-deploy.md)** — Which devices are out of sync with their configuration group? For bulk onboard from CSV (SD-Routing default), see [config group CSV onboard](recipes/config-group-csv-onboard-deploy.md).
 - **[Maps and location](recipes/topology-location-gps.md)** — Where are sites on a map? How do you keep history beyond Manager retention? See [location history](recipes/location-history-retention.md).
+- **[Hosted edge services (IOx)](recipes/hosted-edge-services-iox.md)** — Which IOx apps run on edges, and are they healthy? Deploy via [config group CSV onboard](recipes/config-group-csv-onboard-deploy.md); monitor with App Hosting statistics APIs.
 
 Each answer is packaged as a **recipe** (a short workflow document). Optional **Python samples** let you try the same workflow in a lab.
 
@@ -58,6 +59,7 @@ Day-to-day monitoring and troubleshooting views.
 4. [Transport / underlay](recipes/transport-underlay-monitoring.md)
 5. [Syslog, alarms, audit](recipes/syslog-alarms-audit-rbac.md)
 6. [UX 2.0 config groups — drift and deploy](recipes/config-group-ux2-sync-deploy.md)
+7. Optional: [Hosted edge services (IOx)](recipes/hosted-edge-services-iox.md)
 
 ### Dashboard or integration architect
 
@@ -78,6 +80,7 @@ Run samples and build production collectors.
 3. [Security, RBAC, secrets](security-rbac-secrets.md)
 4. [Scale and pagination](02-rate-limits-scale.md)
 5. [Recipes index](recipes/README.md) and [Python scripts](../README.md#python-scripts-samplesscripts)
+6. Optional: [Hosted edge services (IOx)](recipes/hosted-edge-services-iox.md) — statistics collectors after config-group deploy
 
 ### MSP / multi-tenant operator
 

@@ -22,6 +22,10 @@ Plain-language definitions for readers new to APIs. Technical detail is in the *
 | **JWT claims** | Fields inside the login response (token, refresh, csrf). | `token`, `refresh`, `csrf`, `tenantId`, etc., per DevNet. |
 | **XSRF / CSRF token** | A safety token required for changes (POST/PUT/DELETE). | Sent as `X-XSRF-TOKEN` header with mutating requests. |
 | **RBAC** | Role-based access — who may read or change what. | Manager permissions for API users; start read-only for collectors. |
+| **Hosted Edge Services** | IOx container apps on edges, monitored from Manager. | Monitor > Hosted Edge Services; statistics `/statistics/apphosting/*`. See [hosted-edge-services-iox](../recipes/hosted-edge-services-iox.md). |
+| **IOx** | Cisco container runtime on IOS-XE devices. | Hosts third-party and Cisco apps at the edge. |
+| **Custom Application** | Third-party or custom IOx app deployed via UX 2.0. | App-hosting parcel in a config group; deploy triggers install. |
+| **App-hosting parcel** | UX 2.0 profile fragment for IOx apps. | Part of a configuration group; not a separate monitoring API. |
 
 ---
 

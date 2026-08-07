@@ -86,6 +86,11 @@ def main() -> int:
         action="store_true",
         help="Skip config_group_onboard.py discover step",
     )
+    p.add_argument(
+        "--skip-hosted-edge-services",
+        action="store_true",
+        help="Skip hosted_edge_services.py (e.g. if App Hosting statistics RBAC is missing)",
+    )
     args = p.parse_args()
 
     repo = args.samples_repo.resolve()
@@ -136,6 +141,24 @@ def main() -> int:
         )
     else:
         print("SKIP config_group_onboard (--skip-config-group-onboard)")
+
+    if not args.skip_hosted_edge_services:
+        steps.append(
+            (
+                "hosted_edge_services",
+                [
+                    py,
+                    "scripts/hosted_edge_services.py",
+                    "--hours",
+                    "1",
+                    "--discover-fields",
+                    "--output",
+                    str(out_dir / "hosted_edge_services.json"),
+                ],
+            )
+        )
+    else:
+        print("SKIP hosted_edge_services (--skip-hosted-edge-services)")
 
     steps.extend(
         [

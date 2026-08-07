@@ -40,6 +40,7 @@ Use this repository as **human-readable documentation** plus **executable exampl
 | `docs/recipes/multitenant-connectivity.md` | `samples/scripts/multitenant_context.py` |
 | `docs/recipes/config-group-ux2-sync-deploy.md` | `samples/scripts/config_group_ux2.py` |
 | `docs/recipes/config-group-csv-onboard-deploy.md` | `samples/scripts/config_group_onboard.py` |
+| `docs/recipes/hosted-edge-services-iox.md` | `samples/scripts/hosted_edge_services.py` |
 | `docs/02-rate-limits-scale.md` (multi-cluster) | `samples/scripts/federation_demo.py` |
 | (smoke — all recipe scripts) | `samples/scripts/smoke_recipes.py` |
 | [docs/dashboard-architecture.md](docs/dashboard-architecture.md) (snapshot) | `samples/scripts/collect_dashboard_snapshot.py` |

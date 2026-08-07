@@ -103,6 +103,7 @@ python scripts/collect_dashboard_snapshot.py --hours 24 --output output/dashboar
 | Config sync (legacy probe) | [docs/recipes/inventory-status-config-groups.md](docs/recipes/inventory-status-config-groups.md) |
 | UX 2.0 config groups (list, drift, deploy) | [docs/recipes/config-group-ux2-sync-deploy.md](docs/recipes/config-group-ux2-sync-deploy.md) |
 | UX 2.0 CSV onboard (SD-Routing default; associate, deploy, verify) | [docs/recipes/config-group-csv-onboard-deploy.md](docs/recipes/config-group-csv-onboard-deploy.md) · inline docs in `samples/scripts/config_group_onboard.py` |
+| Hosted Edge Services (IOx) — monitor app hosting | [docs/recipes/hosted-edge-services-iox.md](docs/recipes/hosted-edge-services-iox.md) |
 | Health and tunnels | [docs/recipes/health-cpu-mem-tunnels.md](docs/recipes/health-cpu-mem-tunnels.md) |
 | Topology and GPS | [docs/recipes/topology-location-gps.md](docs/recipes/topology-location-gps.md) |
 | Transport / underlay | [docs/recipes/transport-underlay-monitoring.md](docs/recipes/transport-underlay-monitoring.md) |
@@ -119,6 +120,8 @@ python scripts/collect_dashboard_snapshot.py --hours 24 --output output/dashboar
 | `inventory_devices.py` | Devices + per-device interfaces |
 | `inventory_status.py` | Devices + config status / template / CG hints |
 | `config_group_ux2.py` | UX 2.0 config groups: list, drift filter, optional deploy |
+| `config_group_onboard.py` | UX 2.0 CSV onboard: discover, associate, variables, deploy, verify |
+| `hosted_edge_services.py` | Hosted Edge Services (IOx): apphosting statistics snapshot (read-only) |
 | `health_tunnels.py` | Devices + tunnel endpoint attempts |
 | `alarms_events.py` | Alarms and events probe |
 | `topology_location.py` | Sites + devices for maps |

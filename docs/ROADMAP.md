@@ -14,6 +14,13 @@ When you complete an item, open a PR that updates this file (move to **Done** or
 
 ---
 
+## P1 — Hosted Edge Services (IOx)
+
+| Item | Description |
+|------|-------------|
+| **Start/stop edge service API automation** | Capture REST paths from lab `/apidocs` and UI network trace (Monitor > Hosted Edge Services). Ship guarded `--confirm-*` CLI only after OpenAPI validation — not guessed endpoints. |
+| **Classic `device/action/install` sample** | Lab-validate alternate IOx install path vs UX 2.0 config-group deploy; document when each applies. |
+
 ## P1 — Configuration & compliance (UX 2.0)
 
 | Item | Description |
@@ -75,6 +82,7 @@ When you complete an item, open a PR that updates this file (move to **Done** or
 
 | Item | Notes |
 |------|--------|
+| Hosted Edge Services (IOx) monitoring v1 | [hosted-edge-services-iox.md](recipes/hosted-edge-services-iox.md), `hosted_edge_services.py`, `hosted_edge.py` — read-only apphosting statistics + inventory join. |
 | UX 2.0 CSV onboard (discover, associate, variables, deploy, verify) | [config-group-csv-onboard-deploy.md](recipes/config-group-csv-onboard-deploy.md), `config_group_onboard.py`, `device_actions.py` task poll. |
 | Deploy job status (config group) | `poll_action_status()` on `parentTaskId` via `GET /device/action/status/{processId}` in CSV onboard script. |
 | Governance recipe (alarms, events, audit, RBAC) | [syslog-alarms-audit-rbac.md](recipes/syslog-alarms-audit-rbac.md) — API catalog, query DSL, filters; `alarms_events.py` + `governance_query.py`. |

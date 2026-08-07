@@ -64,6 +64,17 @@ Manager supports more than one configuration model. This matters for “is my de
 
 If your organization uses UX 2.0 groups, start with the UX 2.0 recipe. The legacy recipe remains for mixed or template-heavy environments.
 
+## Hosted Edge Services (IOx)
+
+**Hosted Edge Services** are IOx container applications on IOS-XE edges (Cyber Vision, custom third-party apps, etc.). Manager **20.18+** provides a monitoring dashboard (health, version, IOx state, CPU/RAM/disk). **Deploy** apps through UX 2.0 config groups (SD-Routing primary); **monitor** with App Hosting statistics APIs.
+
+| Activity | Recipe |
+|----------|--------|
+| Monitor IOx apps at scale | [hosted-edge-services-iox.md](recipes/hosted-edge-services-iox.md) |
+| Bulk onboard + deploy config group | [config-group-csv-onboard-deploy.md](recipes/config-group-csv-onboard-deploy.md) |
+
+Start/stop edge service from the Manager UI is documented in Cisco guides; API automation is planned as a follow-up ([ROADMAP.md](ROADMAP.md)).
+
 ## What is an API?
 
 An **API** (Application Programming Interface) is a structured way for software to **ask the Manager questions** and get **machine-readable answers** (usually JSON).
