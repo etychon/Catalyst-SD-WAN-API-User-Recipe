@@ -80,10 +80,11 @@ Path prefix: **`/dataservice`**. Validate `x-roles-required` on your Manager **`
 | Step | Method | Path | Notes |
 |------|--------|------|-------|
 | Inventory join | GET | `/device` | Reachability, site-id, hostname |
-| **App hosting stats** | POST | `/statistics/apphosting/page` | **Primary** fleet/history query |
-| Doc count | GET/POST | `/statistics/apphosting/doccount` | Volume before large page pulls |
+| **App hosting stats** | POST | `/statistics/apphosting/page` | **Primary** fleet/history query (`query` + `size`; no `aggregation`) |
+| Doc count (filtered) | POST | `/statistics/apphosting/doccount` | Same `query` body as `/page` — **sample default** |
+| Doc count (unfiltered) | GET | `/statistics/apphosting/doccount` | Optional total when OpenAPI lists GET; library: `query_apphosting_doccount_get()` |
 | Interface stats | POST | `/statistics/apphostinginterface/page` | Optional per-interface metrics |
-| Interface doc count | GET/POST | `/statistics/apphostinginterface/doccount` | Optional |
+| Interface doc count | POST | `/statistics/apphostinginterface/doccount` | Filtered; GET variant optional in library |
 | Field discovery | GET | `/statistics/apphosting/query/fields` | May 404 if family disabled — try `/statistics/apphosting/fields` |
 
 OpenAPI tag: **Monitoring - App Hosting** (confirmed in DevNet 20.15+ API change logs).
@@ -95,8 +96,8 @@ OpenAPI tag: **Monitoring - App Hosting** (confirmed in DevNet 20.15+ API change
 | Deploy IOx via config group | `POST /v1/config-group/{id}/device/deploy`, etc. | [config-group-csv-onboard-deploy.md](config-group-csv-onboard-deploy.md) |
 | Detect app-hosting profile | `GET /v1/config-group/{id}` | `group_has_app_hosting_hint()` in shared library |
 | Deploy task poll | `GET /device/action/status/{processId}` | CSV onboard script |
-| SD-AVC custom apps | GET | `/sdavc/customapps` | [Get Custom App](https://developer.cisco.com/docs/sdwan/get-custom-app/) |
-| Classic install | GET/POST | `/device/action/install` | Lab-validate |
+| SD-AVC custom apps | `GET /sdavc/customapps` | [Get Custom App](https://developer.cisco.com/docs/sdwan/get-custom-app/) |
+| Classic install | `GET/POST /device/action/install` | Lab-validate |
 
 ### Tier 3 — v2 (lab discovery only)
 
@@ -133,6 +134,12 @@ Shapes are **illustrative** — confirm with `GET …/apphosting/query/fields` a
 
 The sample uses `vdevice_name` for device scoping (same convention as EIOLTE statistics). Override with `SDWAN_STATS_DEVICE_FIELD` or `--device-field` if your OpenAPI lists a different property.
 
+### `aggregation` — not used on `/page`
+
+App Hosting **`POST /statistics/apphosting/page`** uses the **alarms/events-style** body: `query` rules plus optional `size`. It does **not** use the **`aggregation`** object required by `POST /statistics/eiolte/uniqueAggregation` (see [cellular-signal-thresholds.md](cellular-signal-thresholds.md)). If you see `CLICKHOUSE0001` / *Missing tag : aggregation* on a **different** statistics family, check that family’s OpenAPI — do not copy the cellular aggregation block onto apphosting `/page` unless your lab capture proves it.
+
+Filtered doccount uses **POST** with the **same `query` block** as `/page` (no separate GET query string). Optional unfiltered **GET** `/statistics/apphosting/doccount` may appear in OpenAPI for fleet totals without time/device filters.
+
 ### Common failures
 
 | Symptom | Likely cause |
@@ -155,6 +162,7 @@ Discover exact role names on your patch via OpenAPI `x-roles-required`:
 | Operation | Typical DevNet roles (examples) |
 |-----------|----------------------------------|
 | `POST /statistics/apphosting/page` | Statistics / monitoring read (confirm in `/apidocs`) |
+| `POST /statistics/apphosting/doccount` | Same statistics read role as `/page` (filtered POST) |
 | `GET /device` | Device Monitoring-read |
 | `GET /sdavc/customapps` | Template Deploy-read, Policy Configuration-read (per DevNet) |
 
@@ -210,7 +218,7 @@ python scripts/hosted_edge_services.py --discover-fields
 python scripts/hosted_edge_services.py --include-interfaces --include-custom-apps --output output/hosted_edge_full.json
 ```
 
-Report JSON includes `apphosting_page.ok`, `rows[]` with optional `inventory` join, and `error` strings when APIs are unavailable (script exits 0 for read-only smoke).
+Report JSON includes `inventory.ok`, `apphosting_page.ok`, `rows[]` with optional `inventory` join (`inventory_join`: `ok` or `skipped`), `apphosting_doccount.count`, and `error` strings when APIs are unavailable (script exits 0 for read-only smoke).
 
 ---
 

@@ -13,7 +13,12 @@ from __future__ import annotations
 from typing import Any
 
 from sdwan_recipes.client import ManagerClient, SdwanApiError
-from sdwan_recipes.governance_query import build_query, rule_in, rule_last_n_hours
+from sdwan_recipes.governance_query import (
+    build_query,
+    count_from_response,
+    rule_in,
+    rule_last_n_hours,
+)
 from sdwan_recipes.util import device_rows, unwrap_data
 
 APPHOSTING_PAGE = "/dataservice/statistics/apphosting/page"
@@ -46,6 +51,8 @@ def build_apphosting_page_query(
     Build POST body for ``/statistics/apphosting/page``.
 
     Uses the same query DSL as alarms/events (``entry_time`` + optional device rule).
+    App Hosting ``/page`` uses ``query`` + ``size`` only — not the ``aggregation`` object
+    required by ``/statistics/eiolte/uniqueAggregation`` (see cellular recipe).
     Field names are illustrative — confirm with ``GET …/apphosting/query/fields`` in lab.
     """
     rules = [rule_last_n_hours(hours)]
@@ -66,8 +73,18 @@ def query_apphosting_doccount(
     client: ManagerClient,
     body: dict[str, Any],
 ) -> Any:
-    """POST doccount with the same query body (common statistics pattern)."""
+    """
+    POST filtered doccount with the same ``query`` body as ``/page`` (sample default).
+
+    Some OpenAPI listings also expose ``GET /statistics/apphosting/doccount`` for an
+    unfiltered total — use :func:`query_apphosting_doccount_get` when you need that.
+    """
     return client.dataservice_post_json(APPHOSTING_DOCCOUNT, json_body=body)
+
+
+def query_apphosting_doccount_get(client: ManagerClient) -> Any:
+    """GET ``/statistics/apphosting/doccount`` — unfiltered doc count when OpenAPI lists GET."""
+    return client.dataservice_json(APPHOSTING_DOCCOUNT)
 
 
 def query_apphostinginterface_page(
@@ -82,8 +99,18 @@ def query_apphostinginterface_doccount(
     client: ManagerClient,
     body: dict[str, Any],
 ) -> Any:
-    """POST interface family doccount."""
+    """POST filtered interface-family doccount (same query body as ``/page``)."""
     return client.dataservice_post_json(APPHOSTINGINTERFACE_DOCCOUNT, json_body=body)
+
+
+def query_apphostinginterface_doccount_get(client: ManagerClient) -> Any:
+    """GET ``/statistics/apphostinginterface/doccount`` — unfiltered total when listed in OpenAPI."""
+    return client.dataservice_json(APPHOSTINGINTERFACE_DOCCOUNT)
+
+
+def apphosting_doccount_value(payload: Any) -> int:
+    """Parse a doccount response (not a page ``data[]`` payload)."""
+    return count_from_response(payload)
 
 
 def _probe_paths(client: ManagerClient, paths: tuple[str, ...]) -> dict[str, Any]:
@@ -115,8 +142,9 @@ def list_custom_apps(client: ManagerClient) -> Any:
 
 def normalize_apphosting_rows(payload: Any) -> list[dict[str, Any]]:
     """
-    Extract row dicts from apphosting page/doccount responses.
+    Extract row dicts from apphosting **page** responses.
 
+    Do not use for doccount — use :func:`apphosting_doccount_value` instead.
     Handles ``data[]``, nested ``items[].data``, or a top-level list (validate in lab).
     """
     if isinstance(payload, list):

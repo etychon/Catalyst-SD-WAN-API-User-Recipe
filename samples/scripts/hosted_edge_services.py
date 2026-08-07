@@ -21,7 +21,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 _REPO = Path(__file__).resolve().parents[1]
 _SRC = _REPO / "src"
@@ -32,6 +32,7 @@ from sdwan_recipes.client import ManagerClient, SdwanApiError
 from sdwan_recipes.config import Settings
 from sdwan_recipes.hosted_edge import (
     DEFAULT_STATS_DEVICE_FIELD,
+    apphosting_doccount_value,
     build_apphosting_page_query,
     discover_apphosting_query_fields,
     join_apphosting_to_inventory,
@@ -49,9 +50,27 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("hosted_edge_services")
 
 _STATS_DEVICE_FIELD = os.getenv("SDWAN_STATS_DEVICE_FIELD", DEFAULT_STATS_DEVICE_FIELD).strip()
+_DEVICE_PATH = "/dataservice/device"
 
 
-def _safe_call(label: str, fn) -> dict[str, Any]:
+def _safe_inventory(client: ManagerClient) -> dict[str, Any]:
+    try:
+        payload = client.dataservice_json(_DEVICE_PATH)
+        return {
+            "ok": True,
+            "label": "inventory",
+            "device_count": len(device_rows(payload)),
+            "payload": payload,
+        }
+    except SdwanApiError as exc:
+        log.warning("inventory failed: %s", exc)
+        return {"ok": False, "label": "inventory", "error": str(exc)}
+    except Exception as exc:  # noqa: BLE001 — report unexpected errors in JSON
+        log.warning("inventory failed: %s", exc)
+        return {"ok": False, "label": "inventory", "error": str(exc)}
+
+
+def _safe_page_call(label: str, fn: Callable[[], Any]) -> dict[str, Any]:
     try:
         payload = fn()
         rows = normalize_apphosting_rows(payload)
@@ -69,6 +88,38 @@ def _safe_call(label: str, fn) -> dict[str, Any]:
     except Exception as exc:  # noqa: BLE001 — report unexpected errors in JSON
         log.warning("%s failed: %s", label, exc)
         return {"ok": False, "label": label, "error": str(exc)}
+
+
+def _safe_doccount_call(label: str, fn: Callable[[], Any]) -> dict[str, Any]:
+    try:
+        payload = fn()
+        return {
+            "ok": True,
+            "label": label,
+            "count": apphosting_doccount_value(payload),
+            "payload": payload,
+        }
+    except SdwanApiError as exc:
+        log.warning("%s failed: %s", label, exc)
+        return {"ok": False, "label": label, "error": str(exc)}
+    except Exception as exc:  # noqa: BLE001 — report unexpected errors in JSON
+        log.warning("%s failed: %s", label, exc)
+        return {"ok": False, "label": label, "error": str(exc)}
+
+
+def _maybe_join_inventory(
+    page_result: dict[str, Any],
+    inventory_payload: Any | None,
+) -> None:
+    if not page_result.get("ok"):
+        return
+    rows = page_result.pop("rows", [])
+    if inventory_payload is None:
+        page_result["rows"] = rows
+        page_result["inventory_join"] = "skipped"
+        return
+    page_result["rows"] = join_apphosting_to_inventory(rows, inventory_payload)
+    page_result["inventory_join"] = "ok"
 
 
 def main() -> int:
@@ -134,34 +185,34 @@ def main() -> int:
         )
         report["query"] = query_body
 
-        inventory = client.dataservice_json("/dataservice/device")
-        report["inventory_device_count"] = len(device_rows(inventory))
+        inventory_result = _safe_inventory(client)
+        report["inventory"] = {
+            k: v for k, v in inventory_result.items() if k != "payload"
+        }
+        inventory_payload = (
+            inventory_result.get("payload") if inventory_result.get("ok") else None
+        )
 
-        page_result = _safe_call(
+        page_result = _safe_page_call(
             "apphosting_page",
             lambda: query_apphosting_page(client, query_body),
         )
-        if page_result.get("ok"):
-            page_result["rows"] = join_apphosting_to_inventory(page_result.pop("rows"), inventory)
+        _maybe_join_inventory(page_result, inventory_payload)
         report["apphosting_page"] = page_result
 
-        doccount_result = _safe_call(
+        report["apphosting_doccount"] = _safe_doccount_call(
             "apphosting_doccount",
             lambda: query_apphosting_doccount(client, query_body),
         )
-        report["apphosting_doccount"] = doccount_result
 
         if args.include_interfaces:
-            iface_page = _safe_call(
+            iface_page = _safe_page_call(
                 "apphostinginterface_page",
                 lambda: query_apphostinginterface_page(client, query_body),
             )
-            if iface_page.get("ok"):
-                iface_page["rows"] = join_apphosting_to_inventory(
-                    iface_page.pop("rows"), inventory
-                )
+            _maybe_join_inventory(iface_page, inventory_payload)
             report["apphostinginterface_page"] = iface_page
-            report["apphostinginterface_doccount"] = _safe_call(
+            report["apphostinginterface_doccount"] = _safe_doccount_call(
                 "apphostinginterface_doccount",
                 lambda: query_apphostinginterface_doccount(client, query_body),
             )
@@ -184,6 +235,10 @@ def main() -> int:
     if not report.get("apphosting_page", {}).get("ok"):
         log.warning(
             "apphosting_page did not succeed — feature may be disabled or RBAC missing; see report JSON"
+        )
+    if not report.get("inventory", {}).get("ok"):
+        log.warning(
+            "inventory did not succeed — rows omit reachability join; see report JSON"
         )
     return 0
 
